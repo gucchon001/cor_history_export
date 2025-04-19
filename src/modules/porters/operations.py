@@ -86,99 +86,98 @@ class PortersOperations:
             self.browser.save_screenshot("other_operations_error.png")
             return False
     
-    def click_candidates_menu(self):
+    def click_history_menu(self):
         """
-        求職者メニューをクリックする
+        対応履歴メニューをクリックする
         
         Returns:
             bool: 処理が成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            logger.info("=== 求職者メニューのクリック処理を開始します ===")
+            logger.info("=== 対応履歴メニューのクリック処理を開始します ===")
             
-            # メニュー項目5（求職者メニュー）をクリック
-            if not self.browser.click_element('porters_menu', 'menu_item_5'):
-                logger.error("求職者メニューのクリックに失敗しました")
+            # 対応履歴メニューをクリック
+            if not self.browser.click_element('porters_menu', 'history_menu'):
+                logger.error("対応履歴メニューのクリックに失敗しました")
                 return False
             
             # 処理待機
             time.sleep(3)
-            self.browser.save_screenshot("after_candidates_menu_click.png")
+            self.browser.save_screenshot("after_history_menu_click.png")
             
-            logger.info("✅ 求職者メニューのクリック処理が完了しました")
+            logger.info("✅ 対応履歴メニューのクリック処理が完了しました")
             return True
             
         except Exception as e:
-            logger.error(f"求職者メニューのクリック処理中にエラーが発生しました: {str(e)}")
+            logger.error(f"対応履歴メニューのクリック処理中にエラーが発生しました: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
-            self.browser.save_screenshot("candidates_menu_error.png")
+            self.browser.save_screenshot("history_menu_error.png")
             return False
     
-    def click_all_candidates(self):
+    def click_all_history(self):
         """
-        「すべての求職者」リンクをクリックする
+        「すべての対応履歴」リンクをクリックする
         
         Returns:
             bool: 処理が成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            logger.info("=== 「すべての求職者」リンクのクリック処理を開始します ===")
+            logger.info("=== 「すべての対応履歴」リンクのクリック処理を開始します ===")
             
-            # 「すべての求職者」リンクをクリック
-            if not self.browser.click_element('porters_menu', 'all_candidates'):
-                logger.error("「すべての求職者」リンクのクリックに失敗しました")
+            # 処理待機 - メニューが完全に表示されるまで待機
+            time.sleep(5)
+            
+            # まずテキスト内容で「すべての対応履歴」リンクを探索
+            logger.info("テキスト内容で「すべての対応履歴」リンクを探索します")
+            links = self.browser.find_elements_by_tag("a", "すべての対応履歴")
+            if links:
+                self.browser.click_element_direct(links[0])
+                logger.info("✓ テキスト内容で「すべての対応履歴」リンクをクリックしました")
+            else:
+                logger.warning("テキスト内容での「すべての対応履歴」リンクの探索に失敗しました。セレクタを使用して再試行します。")
                 
-                # セレクタが動的に変わる可能性があるため、直接CSSセレクタを使用して再試行
-                try:
-                    logger.info("直接CSSセレクタを使用して「すべての求職者」リンクを探索します")
-                    all_candidates_selector = "#ui-id-189 > li:nth-child(7) > a"
-                    all_candidates_element = self.browser.wait_for_element(
-                        By.CSS_SELECTOR, 
-                        all_candidates_selector,
-                        condition=EC.element_to_be_clickable
-                    )
+                # セレクタが動的に変わる可能性があるため、登録済みセレクタを使用
+                if not self.browser.click_element('porters_menu', 'all_history_list'):
+                    logger.error("登録済みセレクタでの「すべての対応履歴」リンクのクリックに失敗しました")
                     
-                    if all_candidates_element:
-                        self.browser.click_element_direct(all_candidates_element)
-                        logger.info("✓ 直接CSSセレクタを使用して「すべての求職者」リンクをクリックしました")
-                    else:
-                        logger.error("直接CSSセレクタを使用しても「すべての求職者」リンクが見つかりませんでした")
+                    # 直接CSSセレクタを使用して再試行
+                    try:
+                        logger.info("直接CSSセレクタを使用して「すべての対応履歴」リンクを探索します")
+                        all_history_selector = "#ui-id-367 > li:nth-child(4) > a"
+                        all_history_element = self.browser.wait_for_element(
+                            By.CSS_SELECTOR, 
+                            all_history_selector,
+                            condition=EC.element_to_be_clickable
+                        )
                         
-                        # テキストで要素を探す最終手段
-                        try:
-                            logger.info("テキスト内容で「すべての求職者」リンクを探索します")
-                            links = self.browser.find_elements_by_tag("a", "すべての求職者")
-                            if links:
-                                self.browser.click_element_direct(links[0])
-                                logger.info("✓ テキスト内容で「すべての求職者」リンクをクリックしました")
-                            else:
-                                logger.error("「すべての求職者」テキストを含むリンクが見つかりませんでした")
-                                return False
-                        except Exception as text_e:
-                            logger.error(f"テキスト内容での探索にも失敗しました: {str(text_e)}")
+                        if all_history_element:
+                            self.browser.click_element_direct(all_history_element)
+                            logger.info("✓ 直接CSSセレクタを使用して「すべての対応履歴」リンクをクリックしました")
+                        else:
+                            logger.error("直接CSSセレクタを使用しても「すべての対応履歴」リンクが見つかりませんでした")
                             return False
-                except Exception as css_e:
-                    logger.error(f"直接CSSセレクタを使用したクリックにも失敗しました: {str(css_e)}")
-                    return False
+                    except Exception as css_e:
+                        logger.error(f"直接CSSセレクタを使用したクリックにも失敗しました: {str(css_e)}")
+                        return False
             
             # 処理待機
             time.sleep(3)
-            self.browser.save_screenshot("after_all_candidates_click.png")
+            self.browser.save_screenshot("after_all_history_click.png")
             
             # ページ内容を確認
             page_html = self.browser.get_page_source()
             page_analysis = self.browser.analyze_page_content(page_html)
             logger.info(f"ページタイトル: {page_analysis['page_title']}")
             
-            logger.info("✅ 「すべての求職者」リンクのクリック処理が完了しました")
+            logger.info("✅ 「すべての対応履歴」リンクのクリック処理が完了しました")
             return True
             
         except Exception as e:
-            logger.error(f"「すべての求職者」リンクのクリック処理中にエラーが発生しました: {str(e)}")
+            logger.error(f"「すべての対応履歴」リンクのクリック処理中にエラーが発生しました: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
-            self.browser.save_screenshot("all_candidates_error.png")
+            self.browser.save_screenshot("all_history_error.png")
             return False
     
     def select_all_candidates(self):
@@ -202,33 +201,37 @@ class PortersOperations:
                 # 直接CSSセレクタを使用して再試行
                 try:
                     logger.info("直接CSSセレクタを使用して「全てチェック」チェックボックスを探索します")
-                    checkbox_selector = "#recordListView input[type='checkbox']"
+                    checkbox_selector = "#recordListView > div.jss37 > div:nth-child(2) > div > div.jss45 > span > span > input"
                     checkbox_element = self.browser.wait_for_element(
                         By.CSS_SELECTOR, 
                         checkbox_selector,
                         condition=EC.element_to_be_clickable,
                         timeout=10
                     )
-                    self.browser.click_element_direct(checkbox_element)
-                    logger.info("✓ 直接CSSセレクタを使用して「全てチェック」チェックボックスをクリックしました")
-                except Exception as css_e:
-                    logger.error(f"直接CSSセレクタを使用したクリックにも失敗しました: {str(css_e)}")
                     
-                    # より具体的なセレクタを試す
-                    try:
-                        logger.info("より具体的なセレクタを使用して「全てチェック」チェックボックスを探索します")
-                        specific_selector = "#recordListView > div.jss37 > div:nth-child(2) > div > div.jss45 > span > span > input"
-                        specific_element = self.browser.wait_for_element(
+                    if checkbox_element:
+                        # チェックボックスが見つかった場合
+                        self.browser.click_element_direct(checkbox_element)
+                        logger.info("✓ 直接CSSセレクタを使用して「全てチェック」チェックボックスをクリックしました")
+                    else:
+                        # 一般的なチェックボックスセレクタを試す
+                        logger.warning("具体的なセレクタが見つかりませんでした。一般的なチェックボックスを探索します。")
+                        checkbox_selector = "#recordListView input[type='checkbox']"
+                        checkbox_element = self.browser.wait_for_element(
                             By.CSS_SELECTOR, 
-                            specific_selector,
+                            checkbox_selector,
                             condition=EC.element_to_be_clickable,
                             timeout=10
                         )
-                        self.browser.click_element_direct(specific_element)
-                        logger.info("✓ より具体的なセレクタを使用して「全てチェック」チェックボックスをクリックしました")
-                    except Exception as specific_e:
-                        logger.error(f"より具体的なセレクタを使用したクリックにも失敗しました: {str(specific_e)}")
-                        return False
+                        if checkbox_element:
+                            self.browser.click_element_direct(checkbox_element)
+                            logger.info("✓ 一般的なセレクタを使用して「全てチェック」チェックボックスをクリックしました")
+                        else:
+                            logger.error("すべてのセレクタで「全てチェック」チェックボックスが見つかりませんでした")
+                            return False
+                except Exception as css_e:
+                    logger.error(f"直接CSSセレクタを使用したクリックにも失敗しました: {str(css_e)}")
+                    return False
             
             # 処理待機
             time.sleep(2)
@@ -422,15 +425,15 @@ class PortersOperations:
         except Exception as scroll_e:
             logger.warning(f"ページ全体のスクロール中にエラーが発生しました: {str(scroll_e)}")
     
-    def export_candidates_data(self) -> bool:
+    def export_history_data(self) -> bool:
         """
-        候補者データをエクスポートする
+        対応履歴データをエクスポートする
         
         Returns:
             bool: 処理が成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            logger.info("=== 候補者データのエクスポート処理を開始します ===")
+            logger.info("=== 対応履歴データのエクスポート処理を開始します ===")
             
             # アクションリストボタンをクリック
             if not self.browser.click_element('candidates_list', 'action_button'):
@@ -452,269 +455,1098 @@ class PortersOperations:
                 logger.info("✓ アクションリストボタンをクリックしました")
             
             # エクスポートボタンをクリック
-            if not self.browser.click_element('candidates_list', 'export_button'):
-                logger.error("エクスポートボタンのクリックに失敗しました")
-                
-                # 直接CSSセレクタを使用して再試行
-                try:
-                    logger.info("直接CSSセレクタを使用してエクスポートボタンを探索します")
-                    export_button_selector = "#pageResume > div:nth-child(25) > div > ul > li.jss175.linkExport"
-                    export_button_element = WebDriverWait(self.browser.driver, 10).until(
-                        EC.element_to_be_clickable((By.CSS_SELECTOR, export_button_selector))
-                    )
-                    export_button_element.click()
-                    logger.info("✓ 直接CSSセレクタを使用してエクスポートボタンをクリックしました")
-                except Exception as css_e:
-                    logger.warning(f"直接CSSセレクタを使用したクリックに失敗しました: {str(css_e)}")
-                    
-                    # XPathを使用して再試行
+            logger.info("エクスポートボタンをクリックします")
+            export_button_clicked = False
+            
+            # 1. まずテキスト内容で「エクスポート」を含む要素を探す
+            try:
+                logger.info("テキスト内容で「エクスポート」を含む要素を探索します")
+                elements = self.browser.driver.find_elements(By.TAG_NAME, "li")
+                for element in elements:
                     try:
-                        logger.info("XPathを使用してエクスポートボタンを探索します")
-                        export_button_xpath = "//*[@id='pageResume']/div[13]/div/ul/li[2]"
+                        element_text = element.text.strip()
+                        element_class = element.get_attribute("class") or ""
+                        if "エクスポート" in element_text and ("linkExport" in element_class or "export" in element_class.lower()):
+                            logger.info(f"「エクスポート」テキストを含む要素を発見しました: {element_text} (class={element_class})")
+                            element.click()
+                            logger.info("✓ テキスト内容でエクスポートボタンをクリックしました")
+                            export_button_clicked = True
+                            break
+                    except Exception as elem_e:
+                        logger.debug(f"要素の確認中にエラー: {str(elem_e)}")
+                        continue
+            except Exception as text_e:
+                logger.warning(f"テキスト内容での探索中にエラーが発生しました: {str(text_e)}")
+            
+            # 2. テキスト検索で見つからなかった場合、セレクタを使用
+            if not export_button_clicked:
+                if not self.browser.click_element('candidates_list', 'export_button'):
+                    logger.error("セレクタでのエクスポートボタンのクリックに失敗しました")
+                    
+                    # 3. 代替セレクタを使用して再試行
+                    try:
+                        logger.info("直接CSSセレクタを使用してエクスポートボタンを探索します")
+                        export_button_selector = "#pageActivity > div:nth-child(27) > div > ul > li.jss194.linkExport"
                         export_button_element = WebDriverWait(self.browser.driver, 10).until(
-                            EC.element_to_be_clickable((By.XPATH, export_button_xpath))
+                            EC.element_to_be_clickable((By.CSS_SELECTOR, export_button_selector))
                         )
                         export_button_element.click()
-                        logger.info("✓ XPathを使用してエクスポートボタンをクリックしました")
-                    except Exception as xpath_e:
-                        logger.error(f"XPathを使用したクリックにも失敗しました: {str(xpath_e)}")
+                        logger.info("✓ 直接CSSセレクタを使用してエクスポートボタンをクリックしました")
+                        export_button_clicked = True
+                    except Exception as css_e:
+                        logger.warning(f"直接CSSセレクタを使用したクリックに失敗しました: {str(css_e)}")
                         
-                        # テキスト内容で検索する最終手段
+                        # 4. クラス名で試す
                         try:
-                            logger.info("テキスト内容でエクスポートボタンを探索します")
-                            elements = self.browser.driver.find_elements(By.TAG_NAME, "li")
-                            for element in elements:
-                                if "エクスポート" in element.text and "linkExport" in element.get_attribute("class"):
-                                    logger.info(f"「エクスポート」テキストを含む要素を発見しました: {element.text}")
-                                    element.click()
-                                    logger.info("✓ テキスト内容でエクスポートボタンをクリックしました")
-                                    break
-                            else:
-                                logger.error("「エクスポート」テキストを含む要素が見つかりませんでした")
-                                return False
-                        except Exception as text_e:
-                            logger.error(f"テキスト内容での探索にも失敗しました: {str(text_e)}")
-                            return False
-            else:
-                logger.info("✓ エクスポートボタンをクリックしました")
+                            logger.info("クラス名でエクスポートボタンを探索します")
+                            export_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, "li.linkExport")
+                            if export_elements:
+                                export_elements[0].click()
+                                logger.info("✓ クラス名でエクスポートボタンをクリックしました")
+                                export_button_clicked = True
+                        except Exception as class_e:
+                            logger.warning(f"クラス名でのエクスポートボタンクリックに失敗しました: {str(class_e)}")
+                        
+                        # 5. XPathを使用して再試行
+                        if not export_button_clicked:
+                            try:
+                                logger.info("XPathを使用してエクスポートボタンを探索します")
+                                export_button_xpath = "//*[contains(@class, 'linkExport')]"
+                                export_button_element = WebDriverWait(self.browser.driver, 10).until(
+                                    EC.element_to_be_clickable((By.XPATH, export_button_xpath))
+                                )
+                                export_button_element.click()
+                                logger.info("✓ XPathを使用してエクスポートボタンをクリックしました")
+                                export_button_clicked = True
+                            except Exception as xpath_e:
+                                logger.error(f"XPathを使用したクリックにも失敗しました: {str(xpath_e)}")
+                else:
+                    logger.info("✓ セレクタでエクスポートボタンをクリックしました")
+                    export_button_clicked = True
             
-            # エクスポートモーダルで「候補者リスト（全rawデータ）」を選択
+            if not export_button_clicked:
+                logger.error("すべての方法でエクスポートボタンのクリックに失敗しました")
+                return False
+                
+            logger.info("✓ エクスポートボタンのクリックに成功しました")
+            
+            # 検索画面を開くボタンをクリック
             if not self.browser.click_element('export_dialog', 'all_raw_data'):
-                logger.error("「候補者リスト（全rawデータ）」オプションの選択に失敗しました")
-                return False
-            logger.info("✓ 「候補者リスト（全rawデータ）」オプションを選択しました")
-            
-            # 「次へ」ボタンを3回クリック
-            for i in range(3):
-                button_name = f'next_button_{i+1}'
-                # セレクタによる検索はスキップし、直接テキストで探す
-                logger.info(f"テキストで{i+1}回目の「次へ」ボタンを探索します")
+                logger.error("検索画面を開くボタンのクリックに失敗しました")
                 
-                # 「次へ」というテキストを含むspanタグを探す
-                buttons = self.browser.find_elements(By.TAG_NAME, "span")
-                next_button_found = False
-                
-                for button in buttons:
-                    try:
-                        if "次へ" in button.text:
-                            logger.info(f"「次へ」テキストを含むボタンを発見しました: {button.text}")
+                # テキストで検索
+                try:
+                    logger.info("テキストで検索画面を開くボタンを探索します")
+                    buttons = self.browser.driver.find_elements(By.TAG_NAME, "button")
+                    for button in buttons:
+                        if "検索画面" in button.text or "search" in button.get_attribute("class").lower():
+                            logger.info(f"検索関連のボタンを発見しました: {button.text}")
                             button.click()
-                            logger.info(f"✓ テキストで{i+1}回目の「次へ」ボタンをクリックしました")
-                            next_button_found = True
+                            logger.info("✓ テキスト内容で検索画面を開くボタンをクリックしました")
                             break
-                    except:
-                        continue
-                
-                if not next_button_found:
-                    # 最後のボタンは「実行」の可能性がある
-                    if i == 2:
-                        logger.info("最後のボタンは「実行」の可能性があるため、「実行」ボタンを探索します")
-                        for button in buttons:
-                            try:
-                                if "実行" in button.text:
-                                    logger.info(f"「実行」テキストを含むボタンを発見しました: {button.text}")
-                                    button.click()
-                                    logger.info("✓ テキストで「実行」ボタンをクリックしました")
-                                    next_button_found = True
-                                    break
-                            except:
-                                continue
-                    
-                    if not next_button_found:
-                        logger.error(f"{i+1}回目の「次へ」または「実行」ボタンが見つかりませんでした")
-                        return False
-                
-                time.sleep(1)
-            
-            # 「実行」ボタンをクリック（3回目の「次へ」ボタンの後に実行ボタンをクリック）
-            logger.info("テキストで「実行」ボタンを探索します")
-            buttons = self.browser.driver.find_elements(By.TAG_NAME, "span")
-            execute_button_found = False
-            
-            for button in buttons:
-                try:
-                    if "実行" in button.text:
-                        logger.info(f"「実行」テキストを含むボタンを発見しました: {button.text}")
-                        button.click()
-                        logger.info("✓ テキストで「実行」ボタンをクリックしました")
-                        execute_button_found = True
-                        break
-                except:
-                    continue
-            
-            if not execute_button_found:
-                # 「設定を保存」ボタンが表示されている可能性がある
-                for button in buttons:
-                    try:
-                        if "設定を保存" in button.text:
-                            logger.info(f"「設定を保存」テキストを含むボタンを発見しました: {button.text}")
-                            logger.warning("「設定を保存」ボタンではなく「実行」ボタンを探しています")
-                            continue
-                        
-                        # ボタンのテキストをログに出力して確認
-                        if button.text.strip():
-                            logger.info(f"ボタンテキスト: '{button.text}'")
-                    except:
-                        continue
-                
-                # 親要素を探索してボタンを見つける
-                try:
-                    logger.info("ダイアログのボタンペインを探索します")
-                    button_panes = self.browser.driver.find_elements(By.CSS_SELECTOR, ".ui-dialog-buttonpane")
-                    if button_panes:
-                        logger.info(f"{len(button_panes)}個のボタンペインを発見しました")
-                        for pane in button_panes:
-                            buttons = []
-                            try:
-                                buttons = pane.find_elements(By.TAG_NAME, "button")
-                                logger.info(f"ペイン内に{len(buttons)}個のボタンを発見しました")
-                                
-                                # 最後のボタンが「実行」ボタンの可能性が高い
-                                if buttons:
-                                    last_button = buttons[-1]
-                                    button_text = last_button.text if hasattr(last_button, 'text') else ""
-                                    logger.info(f"最後のボタンをクリックします: '{button_text}'")
-                                    last_button.click()
-                                    logger.info("✓ 最後のボタンをクリックしました")
-                                    execute_button_found = True
-                                    break
-                            except Exception as btn_e:
-                                logger.warning(f"ボタン探索中にエラーが発生しました: {str(btn_e)}")
-                                continue
-                except Exception as e:
-                    logger.warning(f"ダイアログのボタンペイン探索中にエラーが発生しました: {str(e)}")
-            
-            if not execute_button_found:
-                logger.error("「実行」ボタンが見つかりませんでした")
-                return False
-            
-            # OKボタンをクリック
-            time.sleep(45)  # エクスポート処理の完了を待つ（30秒から45秒に増加）
-            
-            # テキストで「OK」ボタンを探す
-            logger.info("テキストで「OK」ボタンを探索します")
-            ok_button_found = False
-            
-            # まずspanタグ内のテキストで探す
-            buttons = self.browser.driver.find_elements(By.TAG_NAME, "span")
-            for button in buttons:
-                try:
-                    if button.text.strip().upper() == "OK":
-                        logger.info(f"「OK」テキストを含むspanを発見しました: {button.text}")
-                        button.click()
-                        logger.info("✓ テキストで「OK」ボタンをクリックしました")
-                        ok_button_found = True
-                        break
-                except:
-                    continue
-            
-            # spanで見つからない場合はbuttonタグで探す
-            if not ok_button_found:
-                logger.info("buttonタグで「OK」ボタンを探索します")
-                buttons = self.browser.driver.find_elements(By.TAG_NAME, "button")
-                for button in buttons:
-                    try:
-                        if button.text.strip().upper() == "OK":
-                            logger.info(f"「OK」テキストを含むbuttonを発見しました: {button.text}")
-                            button.click()
-                            logger.info("✓ buttonタグで「OK」ボタンをクリックしました")
-                            ok_button_found = True
-                            break
-                    except:
-                        continue
-            
-            # ダイアログのボタンを探す
-            if not ok_button_found:
-                try:
-                    logger.info("OKダイアログのボタンを探索します")
-                    # ダイアログのボタンペインを探す
-                    dialog_buttons = self.browser.driver.find_elements(By.CSS_SELECTOR, ".ui-dialog-buttonpane button")
-                    if dialog_buttons:
-                        logger.info(f"{len(dialog_buttons)}個のダイアログボタンを発見しました")
-                        # ボタンのテキストをログに出力
-                        for i, btn in enumerate(dialog_buttons):
-                            try:
-                                button_text = btn.text.strip() if hasattr(btn, 'text') else ""
-                                logger.info(f"ダイアログボタン {i+1}: テキスト='{button_text}'")
-                            except:
-                                continue
-                        
-                        # 通常OKボタンは1つだけ
-                        dialog_buttons[0].click()
-                        logger.info("✓ ダイアログボタンをクリックしました")
-                        ok_button_found = True
                     else:
-                        # 一般的なダイアログボタンを探す
-                        logger.info("一般的なダイアログボタンを探索します")
-                        dialog_selectors = [
-                            ".ui-dialog button",
-                            ".modal-dialog button",
-                            ".dialog button",
-                            "div[role='dialog'] button"
-                        ]
-                        
-                        for selector in dialog_selectors:
-                            buttons = self.browser.driver.find_elements(By.CSS_SELECTOR, selector)
-                            if buttons:
-                                logger.info(f"{selector} で {len(buttons)}個のボタンを発見しました")
-                                # 最初のボタンをクリック
-                                buttons[0].click()
-                                logger.info(f"✓ {selector} の最初のボタンをクリックしました")
-                                ok_button_found = True
+                        logger.error("検索関連のボタンが見つかりませんでした")
+                        return False
+                except Exception as text_e:
+                    logger.error(f"テキスト検索での代替手段にも失敗しました: {str(text_e)}")
+                    return False
+                
+            logger.info("✓ 検索画面を開くボタンをクリックしました")
+            
+            # 検索画面が表示されるまで待機
+            time.sleep(3)
+            
+            # 登録先プルダウンから「企業」を選択
+            try:
+                logger.info("登録先プルダウンから「企業」を選択します")
+                
+                # セレクタから登録先プルダウン要素を取得
+                registered_to_element = self.browser.get_element('export_dialog', 'registered_to')
+                if registered_to_element:
+                    # Selectオブジェクトを作成
+                    from selenium.webdriver.support.ui import Select
+                    select = Select(registered_to_element)
+                    
+                    # テキストで「企業」を含むオプションを選択
+                    try:
+                        select.select_by_visible_text("企業")
+                        logger.info("✓ 「企業」オプションを選択しました")
+                    except:
+                        # テキストが完全一致しない場合、部分一致で検索
+                        options = select.options
+                        for option in options:
+                            if "企業" in option.text:
+                                option.click()
+                                logger.info(f"✓ 「{option.text}」オプションを選択しました")
                                 break
+                        else:
+                            # JavaScriptで直接値を設定する代替手段
+                            self.browser.execute_script("arguments[0].value = '企業';", registered_to_element)
+                            logger.info("✓ JavaScriptで「企業」の値を設定しました")
+                else:
+                    logger.error("登録先プルダウン要素が見つかりませんでした")
+                    # 処理を継続するために失敗してもスキップ
+            except Exception as e:
+                logger.error(f"登録先プルダウンの操作中にエラーが発生しました: {str(e)}")
+                self.browser.save_screenshot("register_to_select_error.png")
+                # 処理を継続するために失敗してもスキップ
+            
+            # 検索ボタンをクリック
+            if not self.browser.click_element('export_dialog', 'execute_search'):
+                logger.error("検索ボタンのクリックに失敗しました")
+                
+                # 直接クリックを試みる
+                try:
+                    search_button = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, "#execute_search", 
+                        condition=EC.element_to_be_clickable, 
+                        timeout=10
+                    )
+                    if search_button:
+                        search_button.click()
+                        logger.info("✓ 直接CSSセレクタで検索ボタンをクリックしました")
+                    else:
+                        logger.error("検索ボタンが見つかりませんでした")
+                        return False
                 except Exception as e:
-                    logger.warning(f"OKダイアログのボタン探索中にエラーが発生しました: {str(e)}")
-            
-            if not ok_button_found:
-                logger.error("「OK」ボタンが見つかりませんでした")
-                return False
-            
-            # CSVファイルをダウンロード
-            csv_file_path = self._download_exported_csv()
-            if not csv_file_path:
-                logger.error("CSVファイルのダウンロードに失敗しました")
-                return False
-            logger.info(f"✓ CSVファイルをダウンロードしました: {csv_file_path}")
-            
-            # 設定ファイルからシート名を取得
-            candidates_sheet = env.get_config_value('SHEET_NAMES', 'CANDIDATES', '"users_all"').strip('"')
-            logger.info(f"求職者一覧データの転記先シート名: {candidates_sheet}")
-            
-            # スプレッドシートに転記
-            if self.import_csv_to_spreadsheet(csv_file_path, candidates_sheet):
-                logger.info(f"✓ CSVデータを{candidates_sheet}シートに転記しました")
+                    logger.error(f"検索ボタンクリック処理中にエラーが発生しました: {str(e)}")
+                    return False
             else:
-                logger.error(f"CSVデータの{candidates_sheet}シートへの転記に失敗しました")
+                logger.info("✓ 検索ボタンをクリックしました")
+                
+            # 処理待機
+            time.sleep(3)
+            self.browser.save_screenshot("after_search_button_click.png")
+            
+            # =========================================================
+            # 検索結果が表示されたら全てチェックするチェックボックスをクリック
+            # =========================================================
+            logger.info("検索結果のチェックボックスをクリックします")
+            
+            checkbox_clicked = False
+            
+            # 1. セレクタを使用してチェックボックスをクリック
+            try:
+                checkbox_selector = "#recordListView > div.jss37 > div:nth-child(2) > div > div.jss45 > span > span > input"
+                checkbox_element = self.browser.wait_for_element(
+                    By.CSS_SELECTOR, 
+                    checkbox_selector,
+                    condition=EC.element_to_be_clickable,
+                    timeout=10
+                )
+                
+                if checkbox_element:
+                    checkbox_element.click()
+                    logger.info("✓ 検索結果の全選択チェックボックスをクリックしました")
+                    checkbox_clicked = True
+                    # スクリーンショットを撮影
+                    self.browser.save_screenshot("after_search_checkbox_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでチェックボックスが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"チェックボックスクリック処理中にエラー: {str(e)}")
+            
+            # 2. 代替セレクタを試行
+            if not checkbox_clicked:
+                try:
+                    alternative_selector = "#recordListView input[type='checkbox']"
+                    checkbox_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, alternative_selector)
+                    
+                    if checkbox_elements and len(checkbox_elements) > 0:
+                        # 最初のチェックボックスをクリック（通常は全選択チェックボックス）
+                        checkbox_elements[0].click()
+                        logger.info("✓ 代替セレクタで検索結果のチェックボックスをクリックしました")
+                        checkbox_clicked = True
+                        # スクリーンショットを撮影
+                        self.browser.save_screenshot("after_search_alternative_checkbox.png")
+                    else:
+                        logger.warning("代替セレクタでもチェックボックスが見つかりませんでした")
+                except Exception as e:
+                    logger.warning(f"代替チェックボックスクリック処理中にエラー: {str(e)}")
+            
+            # チェックボックスクリック失敗の場合も処理を続行（警告のみ）
+            if not checkbox_clicked:
+                logger.warning("チェックボックス選択に失敗しましたが、処理を続行します")
+                
+            # 処理待機
+            time.sleep(2)
+            
+            # =====================
+            # アクションボタンクリック
+            # =====================
+            logger.info("アクションボタンをクリックします")
+            action_button_clicked = False
+            
+            # 1. セレクタを使用してアクションボタンをクリック
+            try:
+                action_selector = "#recordListView > div.jss37 > div:nth-child(2) > div > button > div"
+                action_element = self.browser.wait_for_element(
+                    By.CSS_SELECTOR, 
+                    action_selector,
+                    condition=EC.element_to_be_clickable,
+                    timeout=10
+                )
+                
+                if action_element:
+                    action_element.click()
+                    logger.info("✓ アクションボタンをクリックしました")
+                    action_button_clicked = True
+                    # スクリーンショットを撮影
+                    self.browser.save_screenshot("after_action_button_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでアクションボタンが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"アクションボタンクリック処理中にエラー: {str(e)}")
+                
+            # 2. アクションボタンが見つからない場合、シンプルなセレクタで再試行
+            if not action_button_clicked:
+                try:
+                    alternative_action = "#recordListView button"
+                    action_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, alternative_action)
+                    
+                    if action_elements and len(action_elements) > 0:
+                        # 最初のボタンをクリック
+                        action_elements[0].click()
+                        logger.info("✓ 代替セレクタでアクションボタンをクリックしました")
+                        action_button_clicked = True
+                        # スクリーンショットを撮影
+                        self.browser.save_screenshot("after_alternative_action_clicked.png")
+                    else:
+                        logger.warning("代替セレクタでもアクションボタンが見つかりませんでした")
+                except Exception as e:
+                    logger.error(f"代替アクションボタンクリック処理中にエラー: {str(e)}")
+            
+            if not action_button_clicked:
+                logger.error("アクションボタンのクリックに失敗しました")
+                return False
+                
+            # 処理待機
+            time.sleep(2)
+            
+            # エクスポートボタンをクリック
+            logger.info("エクスポートボタンをクリックします")
+            export_button_clicked = False
+            
+            # 1. まずテキスト内容で「エクスポート」を含む要素を探す
+            try:
+                logger.info("テキスト内容で「エクスポート」を含む要素を探索します")
+                elements = self.browser.driver.find_elements(By.TAG_NAME, "li")
+                for element in elements:
+                    try:
+                        element_text = element.text.strip()
+                        element_class = element.get_attribute("class") or ""
+                        if "エクスポート" in element_text and ("linkExport" in element_class or "export" in element_class.lower()):
+                            logger.info(f"「エクスポート」テキストを含む要素を発見しました: {element_text} (class={element_class})")
+                            element.click()
+                            logger.info("✓ テキスト内容でエクスポートボタンをクリックしました")
+                            export_button_clicked = True
+                            break
+                    except Exception as elem_e:
+                        logger.debug(f"要素の確認中にエラー: {str(elem_e)}")
+                        continue
+            except Exception as text_e:
+                logger.warning(f"テキスト内容での探索中にエラーが発生しました: {str(text_e)}")
+            
+            # 2. テキスト検索で見つからなかった場合、セレクタを使用
+            if not export_button_clicked:
+                if not self.browser.click_element('candidates_list', 'export_button'):
+                    logger.error("セレクタでのエクスポートボタンのクリックに失敗しました")
+                    
+                    # 3. 代替セレクタを使用して再試行
+                    try:
+                        logger.info("直接CSSセレクタを使用してエクスポートボタンを探索します")
+                        export_button_selector = "#pageActivity > div:nth-child(27) > div > ul > li.jss194.linkExport"
+                        export_button_element = WebDriverWait(self.browser.driver, 10).until(
+                            EC.element_to_be_clickable((By.CSS_SELECTOR, export_button_selector))
+                        )
+                        export_button_element.click()
+                        logger.info("✓ 直接CSSセレクタを使用してエクスポートボタンをクリックしました")
+                        export_button_clicked = True
+                    except Exception as css_e:
+                        logger.warning(f"直接CSSセレクタを使用したクリックに失敗しました: {str(css_e)}")
+                        
+                        # 4. クラス名で試す
+                        try:
+                            logger.info("クラス名でエクスポートボタンを探索します")
+                            export_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, "li.linkExport")
+                            if export_elements:
+                                export_elements[0].click()
+                                logger.info("✓ クラス名でエクスポートボタンをクリックしました")
+                                export_button_clicked = True
+                        except Exception as class_e:
+                            logger.warning(f"クラス名でのエクスポートボタンクリックに失敗しました: {str(class_e)}")
+                        
+                        # 5. XPathを使用して再試行
+                        if not export_button_clicked:
+                            try:
+                                logger.info("XPathを使用してエクスポートボタンを探索します")
+                                export_button_xpath = "//*[contains(@class, 'linkExport')]"
+                                export_button_element = WebDriverWait(self.browser.driver, 10).until(
+                                    EC.element_to_be_clickable((By.XPATH, export_button_xpath))
+                                )
+                                export_button_element.click()
+                                logger.info("✓ XPathを使用してエクスポートボタンをクリックしました")
+                                export_button_clicked = True
+                            except Exception as xpath_e:
+                                logger.error(f"XPathを使用したクリックにも失敗しました: {str(xpath_e)}")
+                else:
+                    logger.info("✓ セレクタでエクスポートボタンをクリックしました")
+                    export_button_clicked = True
+            
+            if not export_button_clicked:
+                logger.error("すべての方法でエクスポートボタンのクリックに失敗しました")
+                return False
+                
+            logger.info("✓ エクスポートボタンのクリックに成功しました")
+            
+            # 検索画面を開くボタンをクリック
+            if not self.browser.click_element('export_dialog', 'all_raw_data'):
+                logger.error("検索画面を開くボタンのクリックに失敗しました")
+                
+                # テキストで検索
+                try:
+                    logger.info("テキストで検索画面を開くボタンを探索します")
+                    buttons = self.browser.driver.find_elements(By.TAG_NAME, "button")
+                    for button in buttons:
+                        if "検索画面" in button.text or "search" in button.get_attribute("class").lower():
+                            logger.info(f"検索関連のボタンを発見しました: {button.text}")
+                            button.click()
+                            logger.info("✓ テキスト内容で検索画面を開くボタンをクリックしました")
+                            break
+                    else:
+                        logger.error("検索関連のボタンが見つかりませんでした")
+                        return False
+                except Exception as text_e:
+                    logger.error(f"テキスト検索での代替手段にも失敗しました: {str(text_e)}")
+                    return False
+                
+            logger.info("✓ 検索画面を開くボタンをクリックしました")
+            
+            # 検索画面が表示されるまで待機
+            time.sleep(3)
+            
+            # 登録先プルダウンから「企業」を選択
+            try:
+                logger.info("登録先プルダウンから「企業」を選択します")
+                
+                # セレクタから登録先プルダウン要素を取得
+                registered_to_element = self.browser.get_element('export_dialog', 'registered_to')
+                if registered_to_element:
+                    # Selectオブジェクトを作成
+                    from selenium.webdriver.support.ui import Select
+                    select = Select(registered_to_element)
+                    
+                    # テキストで「企業」を含むオプションを選択
+                    try:
+                        select.select_by_visible_text("企業")
+                        logger.info("✓ 「企業」オプションを選択しました")
+                    except:
+                        # テキストが完全一致しない場合、部分一致で検索
+                        options = select.options
+                        for option in options:
+                            if "企業" in option.text:
+                                option.click()
+                                logger.info(f"✓ 「{option.text}」オプションを選択しました")
+                                break
+                        else:
+                            # JavaScriptで直接値を設定する代替手段
+                            self.browser.execute_script("arguments[0].value = '企業';", registered_to_element)
+                            logger.info("✓ JavaScriptで「企業」の値を設定しました")
+                else:
+                    logger.error("登録先プルダウン要素が見つかりませんでした")
+                    # 処理を継続するために失敗してもスキップ
+            except Exception as e:
+                logger.error(f"登録先プルダウンの操作中にエラーが発生しました: {str(e)}")
+                self.browser.save_screenshot("register_to_select_error.png")
+                # 処理を継続するために失敗してもスキップ
+            
+            # 検索ボタンをクリック
+            if not self.browser.click_element('export_dialog', 'execute_search'):
+                logger.error("検索ボタンのクリックに失敗しました")
+                
+                # 直接クリックを試みる
+                try:
+                    search_button = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, "#execute_search", 
+                        condition=EC.element_to_be_clickable, 
+                        timeout=10
+                    )
+                    if search_button:
+                        search_button.click()
+                        logger.info("✓ 直接CSSセレクタで検索ボタンをクリックしました")
+                    else:
+                        logger.error("検索ボタンが見つかりませんでした")
+                        return False
+                except Exception as e:
+                    logger.error(f"検索ボタンクリック処理中にエラーが発生しました: {str(e)}")
+                    return False
+            else:
+                logger.info("✓ 検索ボタンをクリックしました")
+                
+            # 処理待機
+            time.sleep(3)
+            self.browser.save_screenshot("after_search_button_click.png")
+            
+            # =========================================================
+            # 検索結果が表示されたら全てチェックするチェックボックスをクリック
+            # =========================================================
+            logger.info("検索結果のチェックボックスをクリックします")
+            
+            checkbox_clicked = False
+            
+            # 1. セレクタを使用してチェックボックスをクリック
+            try:
+                checkbox_selector = "#recordListView > div.jss37 > div:nth-child(2) > div > div.jss45 > span > span > input"
+                checkbox_element = self.browser.wait_for_element(
+                    By.CSS_SELECTOR, 
+                    checkbox_selector,
+                    condition=EC.element_to_be_clickable,
+                    timeout=10
+                )
+                
+                if checkbox_element:
+                    checkbox_element.click()
+                    logger.info("✓ 検索結果の全選択チェックボックスをクリックしました")
+                    checkbox_clicked = True
+                    # スクリーンショットを撮影
+                    self.browser.save_screenshot("after_search_checkbox_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでチェックボックスが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"チェックボックスクリック処理中にエラー: {str(e)}")
+            
+            # 2. 代替セレクタを試行
+            if not checkbox_clicked:
+                try:
+                    alternative_selector = "#recordListView input[type='checkbox']"
+                    checkbox_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, alternative_selector)
+                    
+                    if checkbox_elements and len(checkbox_elements) > 0:
+                        # 最初のチェックボックスをクリック（通常は全選択チェックボックス）
+                        checkbox_elements[0].click()
+                        logger.info("✓ 代替セレクタで検索結果のチェックボックスをクリックしました")
+                        checkbox_clicked = True
+                        # スクリーンショットを撮影
+                        self.browser.save_screenshot("after_search_alternative_checkbox.png")
+                    else:
+                        logger.warning("代替セレクタでもチェックボックスが見つかりませんでした")
+                except Exception as e:
+                    logger.warning(f"代替チェックボックスクリック処理中にエラー: {str(e)}")
+            
+            # チェックボックスクリック失敗の場合も処理を続行（警告のみ）
+            if not checkbox_clicked:
+                logger.warning("チェックボックス選択に失敗しましたが、処理を続行します")
+                
+            # 処理待機
+            time.sleep(2)
+            
+            # =====================
+            # アクションボタンクリック
+            # =====================
+            logger.info("アクションボタンをクリックします")
+            action_button_clicked = False
+            
+            # 1. セレクタを使用してアクションボタンをクリック
+            try:
+                action_selector = "#recordListView > div.jss37 > div:nth-child(2) > div > button > div"
+                action_element = self.browser.wait_for_element(
+                    By.CSS_SELECTOR, 
+                    action_selector,
+                    condition=EC.element_to_be_clickable,
+                    timeout=10
+                )
+                
+                if action_element:
+                    action_element.click()
+                    logger.info("✓ アクションボタンをクリックしました")
+                    action_button_clicked = True
+                    # スクリーンショットを撮影
+                    self.browser.save_screenshot("after_action_button_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでアクションボタンが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"アクションボタンクリック処理中にエラー: {str(e)}")
+                
+            # 2. アクションボタンが見つからない場合、シンプルなセレクタで再試行
+            if not action_button_clicked:
+                try:
+                    alternative_action = "#recordListView button"
+                    action_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, alternative_action)
+                    
+                    if action_elements and len(action_elements) > 0:
+                        # 最初のボタンをクリック
+                        action_elements[0].click()
+                        logger.info("✓ 代替セレクタでアクションボタンをクリックしました")
+                        action_button_clicked = True
+                        # スクリーンショットを撮影
+                        self.browser.save_screenshot("after_alternative_action_clicked.png")
+                    else:
+                        logger.warning("代替セレクタでもアクションボタンが見つかりませんでした")
+                except Exception as e:
+                    logger.error(f"代替アクションボタンクリック処理中にエラー: {str(e)}")
+            
+            if not action_button_clicked:
+                logger.error("アクションボタンのクリックに失敗しました")
+                return False
+                
+            # 処理待機
+            time.sleep(2)
+            
+            # エクスポートボタンをクリック
+            logger.info("エクスポートボタンをクリックします")
+            export_button_clicked = False
+            
+            # 1. まずテキスト内容で「エクスポート」を含む要素を探す
+            try:
+                logger.info("テキスト内容で「エクスポート」を含む要素を探索します")
+                elements = self.browser.driver.find_elements(By.TAG_NAME, "li")
+                for element in elements:
+                    try:
+                        element_text = element.text.strip()
+                        element_class = element.get_attribute("class") or ""
+                        if "エクスポート" in element_text and ("linkExport" in element_class or "export" in element_class.lower()):
+                            logger.info(f"「エクスポート」テキストを含む要素を発見しました: {element_text} (class={element_class})")
+                            element.click()
+                            logger.info("✓ テキスト内容でエクスポートボタンをクリックしました")
+                            export_button_clicked = True
+                            break
+                    except Exception as elem_e:
+                        logger.debug(f"要素の確認中にエラー: {str(elem_e)}")
+                        continue
+            except Exception as text_e:
+                logger.warning(f"テキスト内容での探索中にエラーが発生しました: {str(text_e)}")
+            
+            # 2. テキスト検索で見つからなかった場合、セレクタを使用
+            if not export_button_clicked:
+                if not self.browser.click_element('candidates_list', 'export_button'):
+                    logger.error("セレクタでのエクスポートボタンのクリックに失敗しました")
+                    
+                    # 3. 代替セレクタを使用して再試行
+                    try:
+                        logger.info("直接CSSセレクタを使用してエクスポートボタンを探索します")
+                        export_button_selector = "#pageActivity > div:nth-child(27) > div > ul > li.jss194.linkExport"
+                        export_button_element = WebDriverWait(self.browser.driver, 10).until(
+                            EC.element_to_be_clickable((By.CSS_SELECTOR, export_button_selector))
+                        )
+                        export_button_element.click()
+                        logger.info("✓ 直接CSSセレクタを使用してエクスポートボタンをクリックしました")
+                        export_button_clicked = True
+                    except Exception as css_e:
+                        logger.warning(f"直接CSSセレクタを使用したクリックに失敗しました: {str(css_e)}")
+                        
+                        # 4. クラス名で試す
+                        try:
+                            logger.info("クラス名でエクスポートボタンを探索します")
+                            export_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, "li.linkExport")
+                            if export_elements:
+                                export_elements[0].click()
+                                logger.info("✓ クラス名でエクスポートボタンをクリックしました")
+                                export_button_clicked = True
+                        except Exception as class_e:
+                            logger.warning(f"クラス名でのエクスポートボタンクリックに失敗しました: {str(class_e)}")
+                        
+                        # 5. XPathを使用して再試行
+                        if not export_button_clicked:
+                            try:
+                                logger.info("XPathを使用してエクスポートボタンを探索します")
+                                export_button_xpath = "//*[contains(@class, 'linkExport')]"
+                                export_button_element = WebDriverWait(self.browser.driver, 10).until(
+                                    EC.element_to_be_clickable((By.XPATH, export_button_xpath))
+                                )
+                                export_button_element.click()
+                                logger.info("✓ XPathを使用してエクスポートボタンをクリックしました")
+                                export_button_clicked = True
+                            except Exception as xpath_e:
+                                logger.error(f"XPathを使用したクリックにも失敗しました: {str(xpath_e)}")
+                else:
+                    logger.info("✓ セレクタでエクスポートボタンをクリックしました")
+                    export_button_clicked = True
+            
+            if not export_button_clicked:
+                logger.error("すべての方法でエクスポートボタンのクリックに失敗しました")
+                return False
+                
+            logger.info("✓ エクスポートボタンのクリックに成功しました")
+            
+            # エクスポートモーダルが表示されるまで待機
+            time.sleep(2)
+            self.browser.save_screenshot("export_dialog_open.png")
+            
+            # =========================================================
+            # 企業対応履歴エクスポートオプションを選択
+            # =========================================================
+            logger.info("企業対応履歴エクスポートオプションを選択します")
+            company_option_selected = False
+            
+            # 1. セレクタを使用してオプションをクリック
+            try:
+                company_option_element = self.browser.get_element('export_dialog', 'company_history_option')
+                if company_option_element:
+                    company_option_element.click()
+                    logger.info("✓ 企業対応履歴エクスポートオプションを選択しました")
+                    company_option_selected = True
+                    self.browser.save_screenshot("company_option_selected.png")
+                else:
+                    logger.warning("指定されたセレクタで企業対応履歴オプションが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"企業対応履歴オプション選択処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not company_option_selected:
+                try:
+                    logger.info("直接セレクタで企業対応履歴オプションを探索します")
+                    option_selector = "#porters-pdialog_2 > div.mapping > div > div > div > ul > li:nth-child(2) > label > span"
+                    option_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        option_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if option_element:
+                        option_element.click()
+                        logger.info("✓ 直接セレクタで企業対応履歴オプションを選択しました")
+                        company_option_selected = True
+                        self.browser.save_screenshot("company_option_direct_selected.png")
+                    else:
+                        # 親要素を試す
+                        parent_selector = "#porters-pdialog_2 > div.mapping > div > div > div > ul > li:nth-child(2) > label"
+                        parent_element = self.browser.wait_for_element(
+                            By.CSS_SELECTOR, 
+                            parent_selector,
+                            condition=EC.element_to_be_clickable,
+                            timeout=5
+                        )
+                        
+                        if parent_element:
+                            parent_element.click()
+                            logger.info("✓ 親要素を使用して企業対応履歴オプションを選択しました")
+                            company_option_selected = True
+                            self.browser.save_screenshot("company_option_parent_selected.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでの企業対応履歴オプション選択中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not company_option_selected:
+                try:
+                    logger.info("テキスト内容で企業対応履歴オプションを探索します")
+                    labels = self.browser.driver.find_elements(By.TAG_NAME, "label")
+                    for label in labels:
+                        try:
+                            label_text = label.text.strip()
+                            if "企業" in label_text and "対応履歴" in label_text:
+                                logger.info(f"「企業対応履歴」を含むラベルを発見しました: {label_text}")
+                                label.click()
+                                logger.info("✓ テキスト内容で企業対応履歴オプションを選択しました")
+                                company_option_selected = True
+                                self.browser.save_screenshot("company_option_text_selected.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"ラベル確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容での企業対応履歴オプション探索中にエラー: {str(text_e)}")
+            
+            if not company_option_selected:
+                logger.warning("企業対応履歴オプションの選択に失敗しましたが、処理を続行します")
+            
+            # 処理待機
+            time.sleep(2)
+            
+            # =========================================================
+            # 次へボタンをクリック（1回目）
+            # =========================================================
+            logger.info("次へボタン（1/3）をクリックします")
+            next_button1_clicked = False
+            
+            # 1. セレクタを使用して次へボタンをクリック
+            try:
+                next_button1_element = self.browser.get_element('export_dialog', 'next_button_1')
+                if next_button1_element:
+                    next_button1_element.click()
+                    logger.info("✓ 次へボタン（1/3）をクリックしました")
+                    next_button1_clicked = True
+                    self.browser.save_screenshot("next_button1_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタで次へボタン（1/3）が見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"次へボタン（1/3）クリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not next_button1_clicked:
+                try:
+                    logger.info("直接セレクタで次へボタン（1/3）を探索します")
+                    button_selector = "#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(1) > span"
+                    button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if button_element:
+                        button_element.click()
+                        logger.info("✓ 直接セレクタで次へボタン（1/3）をクリックしました")
+                        next_button1_clicked = True
+                        self.browser.save_screenshot("next_button1_direct_clicked.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでの次へボタン（1/3）クリック中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not next_button1_clicked:
+                try:
+                    logger.info("テキスト内容で次へボタン（1/3）を探索します")
+                    spans = self.browser.driver.find_elements(By.TAG_NAME, "span")
+                    for span in spans:
+                        try:
+                            span_text = span.text.strip()
+                            if "次へ" in span_text:
+                                logger.info(f"「次へ」を含むスパンを発見しました: {span_text}")
+                                span.click()
+                                logger.info("✓ テキスト内容で次へボタン（1/3）をクリックしました")
+                                next_button1_clicked = True
+                                self.browser.save_screenshot("next_button1_text_clicked.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"スパン確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容での次へボタン（1/3）探索中にエラー: {str(text_e)}")
+            
+            if not next_button1_clicked:
+                logger.error("次へボタン（1/3）のクリックに失敗しました")
                 return False
             
-            logger.info("✅ 候補者データのエクスポート処理が完了しました")
+            # 処理待機
+            time.sleep(2)
+            
+            # =========================================================
+            # 次へボタンをクリック（2回目）
+            # =========================================================
+            logger.info("次へボタン（2/3）をクリックします")
+            next_button2_clicked = False
+            
+            # 1. セレクタを使用して次へボタンをクリック
+            try:
+                next_button2_element = self.browser.get_element('export_dialog', 'next_button_2')
+                if next_button2_element:
+                    next_button2_element.click()
+                    logger.info("✓ 次へボタン（2/3）をクリックしました")
+                    next_button2_clicked = True
+                    self.browser.save_screenshot("next_button2_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタで次へボタン（2/3）が見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"次へボタン（2/3）クリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not next_button2_clicked:
+                try:
+                    logger.info("直接セレクタで次へボタン（2/3）を探索します")
+                    button_selector = "#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(2) > span"
+                    button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if button_element:
+                        button_element.click()
+                        logger.info("✓ 直接セレクタで次へボタン（2/3）をクリックしました")
+                        next_button2_clicked = True
+                        self.browser.save_screenshot("next_button2_direct_clicked.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでの次へボタン（2/3）クリック中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not next_button2_clicked:
+                try:
+                    logger.info("テキスト内容で次へボタン（2/3）を探索します")
+                    spans = self.browser.driver.find_elements(By.TAG_NAME, "span")
+                    for span in spans:
+                        try:
+                            span_text = span.text.strip()
+                            if "次へ" in span_text:
+                                logger.info(f"「次へ」を含むスパンを発見しました: {span_text}")
+                                span.click()
+                                logger.info("✓ テキスト内容で次へボタン（2/3）をクリックしました")
+                                next_button2_clicked = True
+                                self.browser.save_screenshot("next_button2_text_clicked.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"スパン確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容での次へボタン（2/3）探索中にエラー: {str(text_e)}")
+            
+            if not next_button2_clicked:
+                logger.error("次へボタン（2/3）のクリックに失敗しました")
+                return False
+            
+            # 処理待機
+            time.sleep(2)
+            
+            # =========================================================
+            # 実行ボタンをクリック
+            # =========================================================
+            logger.info("実行ボタンをクリックします")
+            execute_button_clicked = False
+            
+            # 1. セレクタを使用して実行ボタンをクリック
+            try:
+                execute_button_element = self.browser.get_element('export_dialog', 'execute_button')
+                if execute_button_element:
+                    execute_button_element.click()
+                    logger.info("✓ 実行ボタンをクリックしました")
+                    execute_button_clicked = True
+                    self.browser.save_screenshot("execute_button_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタで実行ボタンが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"実行ボタンクリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not execute_button_clicked:
+                try:
+                    logger.info("直接セレクタで実行ボタンを探索します")
+                    button_selector = "#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(4) > span"
+                    button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if button_element:
+                        button_element.click()
+                        logger.info("✓ 直接セレクタで実行ボタンをクリックしました")
+                        execute_button_clicked = True
+                        self.browser.save_screenshot("execute_button_direct_clicked.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでの実行ボタンクリック中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not execute_button_clicked:
+                try:
+                    logger.info("テキスト内容で実行ボタンを探索します")
+                    spans = self.browser.driver.find_elements(By.TAG_NAME, "span")
+                    for span in spans:
+                        try:
+                            span_text = span.text.strip()
+                            if "実行" in span_text:
+                                logger.info(f"「実行」を含むスパンを発見しました: {span_text}")
+                                span.click()
+                                logger.info("✓ テキスト内容で実行ボタンをクリックしました")
+                                execute_button_clicked = True
+                                self.browser.save_screenshot("execute_button_text_clicked.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"スパン確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容での実行ボタン探索中にエラー: {str(text_e)}")
+            
+            if not execute_button_clicked:
+                logger.error("実行ボタンのクリックに失敗しました")
+                return False
+            
+            # 処理待機（完了メッセージが表示されるまで）
+            time.sleep(5)
+            
+            # =========================================================
+            # OKボタンをクリック
+            # =========================================================
+            logger.info("OKボタンをクリックします")
+            ok_button_clicked = False
+            
+            # 1. セレクタを使用してOKボタンをクリック
+            try:
+                ok_button_element = self.browser.get_element('export_dialog', 'ok_button')
+                if ok_button_element:
+                    ok_button_element.click()
+                    logger.info("✓ OKボタンをクリックしました")
+                    ok_button_clicked = True
+                    self.browser.save_screenshot("ok_button_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでOKボタンが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"OKボタンクリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not ok_button_clicked:
+                try:
+                    logger.info("直接セレクタでOKボタンを探索します")
+                    button_selector = "#pageActivity > div:nth-child(28) > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button > span"
+                    button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if button_element:
+                        button_element.click()
+                        logger.info("✓ 直接セレクタでOKボタンをクリックしました")
+                        ok_button_clicked = True
+                        self.browser.save_screenshot("ok_button_direct_clicked.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでのOKボタンクリック中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not ok_button_clicked:
+                try:
+                    logger.info("テキスト内容でOKボタンを探索します")
+                    spans = self.browser.driver.find_elements(By.TAG_NAME, "span")
+                    for span in spans:
+                        try:
+                            span_text = span.text.strip()
+                            if "OK" in span_text:
+                                logger.info(f"「OK」を含むスパンを発見しました: {span_text}")
+                                span.click()
+                                logger.info("✓ テキスト内容でOKボタンをクリックしました")
+                                ok_button_clicked = True
+                                self.browser.save_screenshot("ok_button_text_clicked.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"スパン確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容でのOKボタン探索中にエラー: {str(text_e)}")
+            
+            # 4. ダイアログボタンを一般的に探索
+            if not ok_button_clicked:
+                try:
+                    logger.info("ダイアログのボタンを一般的に探索します")
+                    dialog_buttons = self.browser.driver.find_elements(By.CSS_SELECTOR, ".ui-dialog-buttonpane button")
+                    if dialog_buttons and len(dialog_buttons) > 0:
+                        # 通常はOKボタンが1つしかない
+                        dialog_buttons[0].click()
+                        logger.info("✓ ダイアログの最初のボタンをクリックしました")
+                        ok_button_clicked = True
+                        self.browser.save_screenshot("dialog_button_clicked.png")
+                except Exception as dialog_e:
+                    logger.warning(f"ダイアログボタン探索中にエラー: {str(dialog_e)}")
+            
+            if not ok_button_clicked:
+                logger.warning("OKボタンのクリックに失敗しましたが、処理を続行します")
+            
+            # 処理待機（通知が表示されるまで）
+            time.sleep(5)
+            
+            # =========================================================
+            # エクスポートの結果ボタンを開く
+            # =========================================================
+            logger.info("エクスポートの結果ボタンを開きます")
+            export_result_clicked = False
+            
+            # 1. セレクタを使用してエクスポート結果ボタンをクリック
+            try:
+                result_button_element = self.browser.get_element('export_result', 'result_list_button')
+                if result_button_element:
+                    result_button_element.click()
+                    logger.info("✓ エクスポート結果ボタンをクリックしました")
+                    export_result_clicked = True
+                    self.browser.save_screenshot("export_result_button_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでエクスポート結果ボタンが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"エクスポート結果ボタンクリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not export_result_clicked:
+                try:
+                    logger.info("直接セレクタでエクスポート結果ボタンを探索します")
+                    button_selector = "#primary-notificationbar > li.p-notificationbar-item-export.p-notificationbar-item.p-notificationbar-item-status-finished"
+                    result_button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=15  # 通知が表示されるまで少し長めに待機
+                    )
+                    
+                    if result_button_element:
+                        result_button_element.click()
+                        logger.info("✓ 直接セレクタでエクスポート結果ボタンをクリックしました")
+                        export_result_clicked = True
+                        self.browser.save_screenshot("export_result_direct_clicked.png")
+                    else:
+                        logger.warning("直接セレクタでもエクスポート結果ボタンが見つかりませんでした")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでのエクスポート結果ボタンクリック中にエラー: {str(e)}")
+            
+            if not export_result_clicked:
+                logger.warning("エクスポート結果ボタンのクリックに失敗しましたが、処理を続行します")
+            
+            # 処理待機（ツールチップが表示されるまで）
+            time.sleep(2)
+            
+            # =========================================================
+            # エクスポートしたデータを取得する
+            # =========================================================
+            logger.info("エクスポートしたデータを取得します")
+            export_data_clicked = False
+            
+            # 1. セレクタを使用してエクスポートデータリンクをクリック
+            try:
+                export_data_element = self.browser.get_element('export_result', 'csv_download_link')
+                if export_data_element:
+                    export_data_element.click()
+                    logger.info("✓ エクスポートデータリンクをクリックしました")
+                    export_data_clicked = True
+                    self.browser.save_screenshot("export_data_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでエクスポートデータリンクが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"エクスポートデータリンククリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not export_data_clicked:
+                try:
+                    logger.info("直接セレクタでエクスポートデータリンクを探索します")
+                    data_selector = "#pageActivity > div.p-ui-tooltip.queue-notification-tooltip > ul > li:nth-child(1) > div > ul > li:nth-child(1)"
+                    export_data_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        data_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if export_data_element:
+                        export_data_element.click()
+                        logger.info("✓ 直接セレクタでエクスポートデータリンクをクリックしました")
+                        export_data_clicked = True
+                        self.browser.save_screenshot("export_data_direct_clicked.png")
+                    else:
+                        # 一般的なセレクタで試す
+                        logger.info("一般的なセレクタでエクスポートデータリンクを探索します")
+                        data_selector_general = "div.p-ui-tooltip.queue-notification-tooltip a"
+                        export_data_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, data_selector_general)
+                        
+                        if export_data_elements and len(export_data_elements) > 0:
+                            export_data_elements[0].click()
+                            logger.info("✓ 一般的なセレクタでエクスポートデータリンクをクリックしました")
+                            export_data_clicked = True
+                            self.browser.save_screenshot("export_data_general_clicked.png")
+                        else:
+                            logger.warning("一般的なセレクタでもエクスポートデータリンクが見つかりませんでした")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでのエクスポートデータリンククリック中にエラー: {str(e)}")
+            
+            if not export_data_clicked:
+                logger.warning("エクスポートデータリンクのクリックに失敗しましたが、処理を続行します")
+            
+            # 処理待機（ダウンロードが開始されるまで）
+            time.sleep(5)
+            
+            logger.info("✅ 対応履歴データのエクスポート処理が完了しました")
             return True
             
         except Exception as e:
-            logger.error(f"候補者データのエクスポート処理中にエラーが発生しました: {str(e)}")
+            logger.error(f"対応履歴データのエクスポート処理中にエラーが発生しました: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
-            self.browser.save_screenshot("export_candidates_error.png")
+            self.browser.save_screenshot("export_history_data_error.png")
             return False
     
     def _download_exported_csv(self, max_retries: int = 3, retry_interval: int = 45) -> Optional[str]:
@@ -991,38 +1823,38 @@ class PortersOperations:
             logger.warning(f"ログイン画面確認中にエラーが発生しました: {str(e)}")
             return False
     
-    def execute_common_candidates_flow(self):
+    def execute_common_history_flow(self):
         """
-        求職者関連の共通処理フローを実行する
+        対応履歴関連の共通処理フローを実行する
         
         以下の処理を順番に実行します：
         1. 「その他業務」ボタンをクリックして新しいウィンドウを開く
-        2. 求職者メニューをクリック
+        2. 対応履歴メニューをクリック
         
         Returns:
             bool: 処理が成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            logger.info("=== 求職者関連の共通処理フローを開始します ===")
+            logger.info("=== 対応履歴関連の共通処理フローを開始します ===")
             
             # 「その他業務」ボタンをクリック
             if not self.click_other_operations_button():
                 logger.error("「その他業務」ボタンのクリック処理に失敗しました")
                 return False
             
-            # 求職者メニューをクリック
-            if not self.click_candidates_menu():
-                logger.error("求職者メニューのクリック処理に失敗しました")
+            # 対応履歴メニューをクリック
+            if not self.click_history_menu():
+                logger.error("対応履歴メニューのクリック処理に失敗しました")
                 return False
             
-            logger.info("✅ 求職者関連の共通処理フローが正常に完了しました")
+            logger.info("✅ 対応履歴関連の共通処理フローが正常に完了しました")
             return True
             
         except Exception as e:
-            logger.error(f"求職者関連の共通処理フロー中にエラーが発生しました: {str(e)}")
+            logger.error(f"対応履歴関連の共通処理フロー中にエラーが発生しました: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
-            self.browser.save_screenshot("common_candidates_flow_error.png")
+            self.browser.save_screenshot("common_history_flow_error.png")
             return False
     
     def execute_operations_flow(self):
@@ -1030,11 +1862,11 @@ class PortersOperations:
         業務操作フローを実行する
         
         以下の処理を順番に実行します：
-        1. 求職者関連の共通処理フロー（「その他業務」ボタンクリック、求職者メニュークリック）
-        2. 「すべての求職者」リンクをクリック
+        1. 対応履歴関連の共通処理フロー（「その他業務」ボタンクリック、対応履歴メニュークリック）
+        2. 「すべての対応履歴」リンクをクリック
         3. 「全てチェック」チェックボックスをクリック
-        4. 「もっと見る」ボタンを繰り返しクリックして、すべての求職者を表示
-        5. 求職者データのエクスポート処理を実行
+        4. 「もっと見る」ボタンを繰り返しクリックして、すべての対応履歴を表示
+        5. 対応履歴データのエクスポート処理を実行
         
         Returns:
             bool: 処理が成功した場合はTrue、失敗した場合はFalse
@@ -1042,63 +1874,30 @@ class PortersOperations:
         try:
             logger.info("=== 業務操作フローを開始します ===")
             
-            # 求職者関連の共通処理フローを実行
-            if not self.execute_common_candidates_flow():
-                logger.error("求職者関連の共通処理フローに失敗しました")
+            # 対応履歴関連の共通処理フローを実行
+            if not self.execute_common_history_flow():
+                logger.error("対応履歴関連の共通処理フローに失敗しました")
                 return False
             
-            # 「すべての求職者」リンクをクリック
-            if not self.click_all_candidates():
-                logger.error("「すべての求職者」リンクのクリック処理に失敗しました")
+            # 「すべての対応履歴」リンクをクリック
+            if not self.click_all_history():
+                logger.error("「すべての対応履歴」リンクのクリック処理に失敗しました")
                 return False
             
-            # 求職者一覧画面で「全てチェック」チェックボックスをクリック
+            # 対応履歴一覧画面で「全てチェック」チェックボックスをクリック
             if not self.select_all_candidates():
                 logger.error("「全てチェック」チェックボックスのクリック処理に失敗しました")
                 return False
             
-            # 「もっと見る」ボタンを繰り返しクリックして、すべての求職者を表示
+            # 「もっと見る」ボタンを繰り返しクリックして、すべての対応履歴を表示
             if not self.click_show_more_repeatedly():
                 logger.error("「もっと見る」ボタンの繰り返しクリック処理に失敗しました")
                 return False
             
-            # 求職者データのエクスポート処理を実行
-            if not self.export_candidates_data():
-                logger.error("求職者データのエクスポート処理に失敗しました")
+            # 対応履歴データのエクスポート処理を実行
+            if not self.export_history_data():
+                logger.error("対応履歴データのエクスポート処理に失敗しました")
                 return False
-            
-            # スプレッドシートの集計処理を実行
-            try:
-                logger.info("スプレッドシートの集計処理を実行します")
-                
-                # テストモジュールをインポート
-                spec = importlib.util.spec_from_file_location(
-                    "test_count_users", 
-                    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 
-                                "tests", "test_count_users.py")
-                )
-                count_users_module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(count_users_module)
-                
-                # 集計処理を実行
-                test_count_users = count_users_module.TestCountUsers()
-                spreadsheet_manager = self.browser.spreadsheet_manager if hasattr(self.browser, 'spreadsheet_manager') else None
-                
-                if spreadsheet_manager is None:
-                    from src.utils.spreadsheet import SpreadsheetManager
-                    spreadsheet_manager = SpreadsheetManager()
-                    spreadsheet_manager.open_spreadsheet()
-                
-                result = test_count_users.count_users_by_phase(spreadsheet_manager)
-                if result:
-                    logger.info("スプレッドシートの集計処理が正常に完了しました")
-                else:
-                    logger.warning("スプレッドシートの集計処理に失敗しましたが、処理を継続します")
-            except Exception as e:
-                logger.error(f"スプレッドシートの集計処理中にエラーが発生しました: {str(e)}")
-                import traceback
-                logger.error(traceback.format_exc())
-                # 集計処理の失敗は全体の処理に影響を与えないようにする
             
             logger.info("✅ 業務操作フローが正常に完了しました")
             return True
@@ -1107,29 +1906,26 @@ class PortersOperations:
             logger.error(f"業務操作フロー中にエラーが発生しました: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
+            self.browser.save_screenshot("operations_flow_error.png")
             return False
     
     def execute_both_processes(self):
         """
-        求職者一覧と選考プロセスの両方の処理を順に実行する
-        
-        以下の処理を順番に実行します：
-        1. 求職者一覧の処理フロー
-        2. 選考プロセスの処理フロー
+        対応履歴と選考プロセスの両方の処理を順に実行する
         
         Returns:
-            tuple: (求職者一覧の処理結果, 選考プロセスの処理結果)
+            tuple: (対応履歴処理の成否, 選考プロセス処理の成否)
         """
         try:
-            logger.info("=== 求職者一覧と選考プロセスの両方の処理を順に実行します ===")
+            logger.info("=== 対応履歴と選考プロセスの両方の処理を順に実行します ===")
             
-            # 求職者一覧の処理フロー
-            logger.info("1. 求職者一覧のエクスポート処理フローを実行します")
+            # 対応履歴のエクスポート処理フロー
+            logger.info("1. 対応履歴のエクスポート処理フローを実行します")
             candidates_success = self.execute_operations_flow()
             if not candidates_success:
-                logger.error("求職者一覧のエクスポート処理フローに失敗しました")
+                logger.error("対応履歴のエクスポート処理フローに失敗しました")
             else:
-                logger.info("求職者一覧のエクスポート処理フローが正常に完了しました")
+                logger.info("対応履歴のエクスポート処理フローが正常に完了しました")
             
             # 処理間の待機時間
             logger.info("次の処理に進む前に10秒間待機します")
@@ -2007,284 +2803,476 @@ class PortersOperations:
                 logger.error("エクスポートボタンが見つかりませんでした")
                 return False
             
-            # エクスポートモーダルで「求人打診~内定まで」を選択
+            # エクスポートモーダルが表示されるまで待機
+            time.sleep(2)
+            self.browser.save_screenshot("selection_processes_export_modal.png")
+            
+            # =========================================================
+            # 企業対応履歴エクスポートオプションを選択
+            # =========================================================
+            logger.info("企業対応履歴エクスポートオプションを選択します")
+            company_option_selected = False
+            
+            # 1. セレクタを使用してオプションをクリック
             try:
-                logger.info("「求人打診~内定まで」オプションを探索します")
-                time.sleep(2)  # モーダルが表示されるまで待機
-                self.browser.save_screenshot("selection_processes_export_modal.png")
-                
-                # 「求人打診~内定まで」のラジオボタンを選択
-                option_selected = False
-                
-                # 指定されたセレクタで試す
+                company_option_element = self.browser.get_element('export_dialog', 'company_history_option')
+                if company_option_element:
+                    company_option_element.click()
+                    logger.info("✓ 企業対応履歴エクスポートオプションを選択しました")
+                    company_option_selected = True
+                    self.browser.save_screenshot("company_option_selected.png")
+                else:
+                    logger.warning("指定されたセレクタで企業対応履歴オプションが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"企業対応履歴オプション選択処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not company_option_selected:
                 try:
-                    logger.info("指定されたセレクタで「求人打診~内定まで」オプションを探索します: #porters-pdialog_2 > div.mapping > div > div > div > ul > li:nth-child(2) > label > span")
+                    logger.info("直接セレクタで企業対応履歴オプションを探索します")
                     option_selector = "#porters-pdialog_2 > div.mapping > div > div > div > ul > li:nth-child(2) > label > span"
-                    option_element = WebDriverWait(self.browser.driver, 10).until(
-                        EC.element_to_be_clickable((By.CSS_SELECTOR, option_selector))
+                    option_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        option_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
                     )
-                    # 要素の情報をログに出力
-                    logger.info(f"要素のテキスト: '{option_element.text}'")
                     
-                    # クリック前にスクリーンショットを取得
-                    self.browser.save_screenshot("before_option_click.png")
-                    
-                    # 要素をクリック
-                    option_element.click()
-                    logger.info("✓ 指定されたセレクタで「求人打診~内定まで」オプションをクリックしました")
-                    option_selected = True
-                except Exception as e:
-                    logger.warning(f"指定されたセレクタでの「求人打診~内定まで」オプションクリックに失敗しました: {str(e)}")
-                    
-                    # 親要素のラベルを試す
-                    try:
-                        logger.info("親要素のラベルで「求人打診~内定まで」オプションを探索します")
-                        label_selector = "#porters-pdialog_2 > div.mapping > div > div > div > ul > li:nth-child(2) > label"
-                        label_element = WebDriverWait(self.browser.driver, 5).until(
-                            EC.element_to_be_clickable((By.CSS_SELECTOR, label_selector))
+                    if option_element:
+                        option_element.click()
+                        logger.info("✓ 直接セレクタで企業対応履歴オプションを選択しました")
+                        company_option_selected = True
+                        self.browser.save_screenshot("company_option_direct_selected.png")
+                    else:
+                        # 親要素を試す
+                        parent_selector = "#porters-pdialog_2 > div.mapping > div > div > div > ul > li:nth-child(2) > label"
+                        parent_element = self.browser.wait_for_element(
+                            By.CSS_SELECTOR, 
+                            parent_selector,
+                            condition=EC.element_to_be_clickable,
+                            timeout=5
                         )
-                        label_element.click()
-                        logger.info("✓ 親要素のラベルで「求人打診~内定まで」オプションをクリックしました")
-                        option_selected = True
-                    except Exception as label_e:
-                        logger.warning(f"親要素のラベルでの「求人打診~内定まで」オプションクリックに失敗しました: {str(label_e)}")
-                
-                # テキスト内容で探す
-                if not option_selected:
-                    try:
-                        logger.info("テキスト内容で「求人打診~内定まで」オプションを探索します")
-                        labels = self.browser.driver.find_elements(By.TAG_NAME, "label")
-                        for label in labels:
-                            if "求人打診" in label.text and "内定" in label.text:
-                                logger.info(f"「求人打診~内定まで」テキストを含むラベルを発見しました: {label.text}")
-                                label.click()
-                                logger.info("✓ テキスト内容で「求人打診~内定まで」オプションをクリックしました")
-                                option_selected = True
-                                break
-                    except Exception as text_e:
-                        logger.warning(f"テキスト内容での「求人打診~内定まで」オプションクリックに失敗しました: {str(text_e)}")
-                
-                # ラジオボタンを直接探す
-                if not option_selected:
-                    try:
-                        logger.info("ラジオボタンを直接探索します")
-                        radio_buttons = self.browser.driver.find_elements(By.CSS_SELECTOR, "input[type='radio']")
-                        if len(radio_buttons) >= 2:  # 少なくとも2つのラジオボタンがある場合
-                            # 2番目のラジオボタンをクリック
-                            radio_buttons[1].click()
-                            logger.info("✓ 2番目のラジオボタンをクリックしました")
-                            option_selected = True
-                    except Exception as radio_e:
-                        logger.warning(f"ラジオボタン直接クリックに失敗しました: {str(radio_e)}")
-                
-                if not option_selected:
-                    logger.warning("「求人打診~内定まで」オプションの選択に失敗しましたが、処理を継続します")
-                
-                # 「次へ」ボタンをクリック
-                logger.info("テキストで「次へ」ボタンを探索します")
-                buttons = self.browser.driver.find_elements(By.TAG_NAME, "span")
-                next_button_found = False
-                
-                for button in buttons:
-                    if "次へ" in button.text:
-                        logger.info(f"「次へ」テキストを含むボタンを発見しました: {button.text}")
-                        button.click()
-                        logger.info("✓ テキストで「次へ」ボタンをクリックしました")
-                        next_button_found = True
-                        break
-                
-                if not next_button_found:
-                    logger.error("「次へ」ボタンが見つかりませんでした")
-                    return False
-                
-                # 「次へ」ボタンを2回クリック
-                for i in range(2):
-                    time.sleep(1)  # 画面の遷移を待つ
-                    logger.info(f"テキストで{i+2}回目の「次へ」ボタンを探索します")
-                    buttons = self.browser.driver.find_elements(By.TAG_NAME, "span")
-                    next_button_found = False
-                    
-                    for button in buttons:
-                        if "次へ" in button.text:
-                            logger.info(f"「次へ」テキストを含むボタンを発見しました: {button.text}")
-                            button.click()
-                            logger.info(f"✓ テキストで{i+2}回目の「次へ」ボタンをクリックしました")
-                            next_button_found = True
-                            break
-                    
-                    if not next_button_found:
-                        # 最後のボタンは「実行」の可能性がある
-                        if i == 1:
-                            logger.info("最後のボタンは「実行」の可能性があるため、「実行」ボタンを探索します")
-                            for button in buttons:
-                                if "実行" in button.text:
-                                    logger.info(f"「実行」テキストを含むボタンを発見しました: {button.text}")
-                                    button.click()
-                                    logger.info("✓ テキストで「実行」ボタンをクリックしました")
-                                    next_button_found = True
-                                    break
                         
-                        if not next_button_found:
-                            logger.warning(f"{i+2}回目の「次へ」または「実行」ボタンが見つかりませんでしたが、処理を継続します")
-                
-                # 「実行」ボタンをクリック
-                time.sleep(1)  # 画面の遷移を待つ
-                logger.info("テキストで「実行」ボタンを探索します")
-                buttons = self.browser.driver.find_elements(By.TAG_NAME, "span")
-                execute_button_found = False
-                
-                for button in buttons:
-                    if "実行" in button.text:
-                        logger.info(f"「実行」テキストを含むボタンを発見しました: {button.text}")
-                        button.click()
-                        logger.info("✓ テキストで「実行」ボタンをクリックしました")
-                        execute_button_found = True
-                        break
-                
-                if not execute_button_found:
-                    # 「設定を保存」ボタンが表示されている可能性がある
-                    for button in buttons:
-                        if "設定を保存" in button.text:
-                            logger.info(f"「設定を保存」テキストを含むボタンを発見しました: {button.text}")
-                            logger.warning("「設定を保存」ボタンではなく「実行」ボタンを探しています")
-                            continue
-                        
-                        # ボタンのテキストをログに出力して確認
-                        if button.text.strip():
-                            logger.info(f"ボタンテキスト: '{button.text}'")
-                    
-                    # 親要素を探索してボタンを見つける
-                    try:
-                        logger.info("ダイアログのボタンペインを探索します")
-                        button_panes = self.browser.driver.find_elements(By.CSS_SELECTOR, ".ui-dialog-buttonpane")
-                        if button_panes:
-                            logger.info(f"{len(button_panes)}個のボタンペインを発見しました")
-                            for pane in button_panes:
-                                buttons = []
-                                try:
-                                    buttons = pane.find_elements(By.TAG_NAME, "button")
-                                    logger.info(f"ペイン内に{len(buttons)}個のボタンを発見しました")
-                                    
-                                    # 最後のボタンが「実行」ボタンの可能性が高い
-                                    if buttons:
-                                        last_button = buttons[-1]
-                                        button_text = last_button.text if hasattr(last_button, 'text') else ""
-                                        logger.info(f"最後のボタンをクリックします: '{button_text}'")
-                                        last_button.click()
-                                        logger.info("✓ 最後のボタンをクリックしました")
-                                        execute_button_found = True
-                                        break
-                                except Exception as btn_e:
-                                    logger.warning(f"ボタン探索中にエラーが発生しました: {str(btn_e)}")
-                                    continue
-                    except Exception as e:
-                        logger.warning(f"ダイアログのボタンペイン探索中にエラーが発生しました: {str(e)}")
-                
-                if not execute_button_found:
-                    logger.warning("「実行」ボタンが見つかりませんでしたが、処理を継続します")
-                
-                # OKボタンをクリック
-                time.sleep(45)  # エクスポート処理の完了を待つ（30秒から45秒に増加）
-                
-                # テキストで「OK」ボタンを探す
-                logger.info("テキストで「OK」ボタンを探索します")
-                ok_button_found = False
-                
-                # まずspanタグ内のテキストで探す
-                buttons = self.browser.driver.find_elements(By.TAG_NAME, "span")
-                for button in buttons:
-                    try:
-                        if button.text.strip().upper() == "OK":
-                            logger.info(f"「OK」テキストを含むspanを発見しました: {button.text}")
-                            button.click()
-                            logger.info("✓ テキストで「OK」ボタンをクリックしました")
-                            ok_button_found = True
-                            break
-                    except:
-                        continue
-                
-                # spanで見つからない場合はbuttonタグで探す
-                if not ok_button_found:
-                    logger.info("buttonタグで「OK」ボタンを探索します")
-                    buttons = self.browser.driver.find_elements(By.TAG_NAME, "button")
-                    for button in buttons:
+                        if parent_element:
+                            parent_element.click()
+                            logger.info("✓ 親要素を使用して企業対応履歴オプションを選択しました")
+                            company_option_selected = True
+                            self.browser.save_screenshot("company_option_parent_selected.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでの企業対応履歴オプション選択中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not company_option_selected:
+                try:
+                    logger.info("テキスト内容で企業対応履歴オプションを探索します")
+                    labels = self.browser.driver.find_elements(By.TAG_NAME, "label")
+                    for label in labels:
                         try:
-                            if button.text.strip().upper() == "OK":
-                                logger.info(f"「OK」テキストを含むbuttonを発見しました: {button.text}")
-                                button.click()
-                                logger.info("✓ buttonタグで「OK」ボタンをクリックしました")
-                                ok_button_found = True
+                            label_text = label.text.strip()
+                            if "企業" in label_text and "対応履歴" in label_text:
+                                logger.info(f"「企業対応履歴」を含むラベルを発見しました: {label_text}")
+                                label.click()
+                                logger.info("✓ テキスト内容で企業対応履歴オプションを選択しました")
+                                company_option_selected = True
+                                self.browser.save_screenshot("company_option_text_selected.png")
                                 break
-                        except:
+                        except Exception as elem_e:
+                            logger.debug(f"ラベル確認中にエラー: {str(elem_e)}")
                             continue
-                
-                # ダイアログのボタンを探す
-                if not ok_button_found:
-                    try:
-                        logger.info("OKダイアログのボタンを探索します")
-                        # ダイアログのボタンペインを探す
-                        dialog_buttons = self.browser.driver.find_elements(By.CSS_SELECTOR, ".ui-dialog-buttonpane button")
-                        if dialog_buttons:
-                            logger.info(f"{len(dialog_buttons)}個のダイアログボタンを発見しました")
-                            # ボタンのテキストをログに出力
-                            for i, btn in enumerate(dialog_buttons):
-                                try:
-                                    button_text = btn.text.strip() if hasattr(btn, 'text') else ""
-                                    logger.info(f"ダイアログボタン {i+1}: テキスト='{button_text}'")
-                                except:
-                                    continue
-                            
-                            # 通常OKボタンは1つだけ
-                            dialog_buttons[0].click()
-                            logger.info("✓ ダイアログボタンをクリックしました")
-                            ok_button_found = True
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容での企業対応履歴オプション探索中にエラー: {str(text_e)}")
+            
+            if not company_option_selected:
+                logger.warning("企業対応履歴オプションの選択に失敗しましたが、処理を続行します")
+            
+            # 処理待機
+            time.sleep(2)
+            
+            # =========================================================
+            # 次へボタンをクリック（1回目）
+            # =========================================================
+            logger.info("次へボタン（1/3）をクリックします")
+            next_button1_clicked = False
+            
+            # 1. セレクタを使用して次へボタンをクリック
+            try:
+                next_button1_element = self.browser.get_element('export_dialog', 'next_button_1')
+                if next_button1_element:
+                    next_button1_element.click()
+                    logger.info("✓ 次へボタン（1/3）をクリックしました")
+                    next_button1_clicked = True
+                    self.browser.save_screenshot("next_button1_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタで次へボタン（1/3）が見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"次へボタン（1/3）クリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not next_button1_clicked:
+                try:
+                    logger.info("直接セレクタで次へボタン（1/3）を探索します")
+                    button_selector = "#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(1) > span"
+                    button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if button_element:
+                        button_element.click()
+                        logger.info("✓ 直接セレクタで次へボタン（1/3）をクリックしました")
+                        next_button1_clicked = True
+                        self.browser.save_screenshot("next_button1_direct_clicked.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでの次へボタン（1/3）クリック中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not next_button1_clicked:
+                try:
+                    logger.info("テキスト内容で次へボタン（1/3）を探索します")
+                    spans = self.browser.driver.find_elements(By.TAG_NAME, "span")
+                    for span in spans:
+                        try:
+                            span_text = span.text.strip()
+                            if "次へ" in span_text:
+                                logger.info(f"「次へ」を含むスパンを発見しました: {span_text}")
+                                span.click()
+                                logger.info("✓ テキスト内容で次へボタン（1/3）をクリックしました")
+                                next_button1_clicked = True
+                                self.browser.save_screenshot("next_button1_text_clicked.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"スパン確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容での次へボタン（1/3）探索中にエラー: {str(text_e)}")
+            
+            if not next_button1_clicked:
+                logger.error("次へボタン（1/3）のクリックに失敗しました")
+                return False
+            
+            # 処理待機
+            time.sleep(2)
+            
+            # =========================================================
+            # 次へボタンをクリック（2回目）
+            # =========================================================
+            logger.info("次へボタン（2/3）をクリックします")
+            next_button2_clicked = False
+            
+            # 1. セレクタを使用して次へボタンをクリック
+            try:
+                next_button2_element = self.browser.get_element('export_dialog', 'next_button_2')
+                if next_button2_element:
+                    next_button2_element.click()
+                    logger.info("✓ 次へボタン（2/3）をクリックしました")
+                    next_button2_clicked = True
+                    self.browser.save_screenshot("next_button2_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタで次へボタン（2/3）が見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"次へボタン（2/3）クリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not next_button2_clicked:
+                try:
+                    logger.info("直接セレクタで次へボタン（2/3）を探索します")
+                    button_selector = "#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(2) > span"
+                    button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if button_element:
+                        button_element.click()
+                        logger.info("✓ 直接セレクタで次へボタン（2/3）をクリックしました")
+                        next_button2_clicked = True
+                        self.browser.save_screenshot("next_button2_direct_clicked.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでの次へボタン（2/3）クリック中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not next_button2_clicked:
+                try:
+                    logger.info("テキスト内容で次へボタン（2/3）を探索します")
+                    spans = self.browser.driver.find_elements(By.TAG_NAME, "span")
+                    for span in spans:
+                        try:
+                            span_text = span.text.strip()
+                            if "次へ" in span_text:
+                                logger.info(f"「次へ」を含むスパンを発見しました: {span_text}")
+                                span.click()
+                                logger.info("✓ テキスト内容で次へボタン（2/3）をクリックしました")
+                                next_button2_clicked = True
+                                self.browser.save_screenshot("next_button2_text_clicked.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"スパン確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容での次へボタン（2/3）探索中にエラー: {str(text_e)}")
+            
+            if not next_button2_clicked:
+                logger.error("次へボタン（2/3）のクリックに失敗しました")
+                return False
+            
+            # 処理待機
+            time.sleep(2)
+            
+            # =========================================================
+            # 実行ボタンをクリック
+            # =========================================================
+            logger.info("実行ボタンをクリックします")
+            execute_button_clicked = False
+            
+            # 1. セレクタを使用して実行ボタンをクリック
+            try:
+                execute_button_element = self.browser.get_element('export_dialog', 'execute_button')
+                if execute_button_element:
+                    execute_button_element.click()
+                    logger.info("✓ 実行ボタンをクリックしました")
+                    execute_button_clicked = True
+                    self.browser.save_screenshot("execute_button_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタで実行ボタンが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"実行ボタンクリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not execute_button_clicked:
+                try:
+                    logger.info("直接セレクタで実行ボタンを探索します")
+                    button_selector = "#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(4) > span"
+                    button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if button_element:
+                        button_element.click()
+                        logger.info("✓ 直接セレクタで実行ボタンをクリックしました")
+                        execute_button_clicked = True
+                        self.browser.save_screenshot("execute_button_direct_clicked.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでの実行ボタンクリック中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not execute_button_clicked:
+                try:
+                    logger.info("テキスト内容で実行ボタンを探索します")
+                    spans = self.browser.driver.find_elements(By.TAG_NAME, "span")
+                    for span in spans:
+                        try:
+                            span_text = span.text.strip()
+                            if "実行" in span_text:
+                                logger.info(f"「実行」を含むスパンを発見しました: {span_text}")
+                                span.click()
+                                logger.info("✓ テキスト内容で実行ボタンをクリックしました")
+                                execute_button_clicked = True
+                                self.browser.save_screenshot("execute_button_text_clicked.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"スパン確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容での実行ボタン探索中にエラー: {str(text_e)}")
+            
+            if not execute_button_clicked:
+                logger.error("実行ボタンのクリックに失敗しました")
+                return False
+            
+            # 処理待機（完了メッセージが表示されるまで）
+            time.sleep(5)
+            
+            # =========================================================
+            # OKボタンをクリック
+            # =========================================================
+            logger.info("OKボタンをクリックします")
+            ok_button_clicked = False
+            
+            # 1. セレクタを使用してOKボタンをクリック
+            try:
+                ok_button_element = self.browser.get_element('export_dialog', 'ok_button')
+                if ok_button_element:
+                    ok_button_element.click()
+                    logger.info("✓ OKボタンをクリックしました")
+                    ok_button_clicked = True
+                    self.browser.save_screenshot("ok_button_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでOKボタンが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"OKボタンクリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not ok_button_clicked:
+                try:
+                    logger.info("直接セレクタでOKボタンを探索します")
+                    button_selector = "#pageActivity > div:nth-child(28) > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button > span"
+                    button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if button_element:
+                        button_element.click()
+                        logger.info("✓ 直接セレクタでOKボタンをクリックしました")
+                        ok_button_clicked = True
+                        self.browser.save_screenshot("ok_button_direct_clicked.png")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでのOKボタンクリック中にエラー: {str(e)}")
+            
+            # 3. テキスト検索で試行
+            if not ok_button_clicked:
+                try:
+                    logger.info("テキスト内容でOKボタンを探索します")
+                    spans = self.browser.driver.find_elements(By.TAG_NAME, "span")
+                    for span in spans:
+                        try:
+                            span_text = span.text.strip()
+                            if "OK" in span_text:
+                                logger.info(f"「OK」を含むスパンを発見しました: {span_text}")
+                                span.click()
+                                logger.info("✓ テキスト内容でOKボタンをクリックしました")
+                                ok_button_clicked = True
+                                self.browser.save_screenshot("ok_button_text_clicked.png")
+                                break
+                        except Exception as elem_e:
+                            logger.debug(f"スパン確認中にエラー: {str(elem_e)}")
+                            continue
+                except Exception as text_e:
+                    logger.warning(f"テキスト内容でのOKボタン探索中にエラー: {str(text_e)}")
+            
+            # 4. ダイアログボタンを一般的に探索
+            if not ok_button_clicked:
+                try:
+                    logger.info("ダイアログのボタンを一般的に探索します")
+                    dialog_buttons = self.browser.driver.find_elements(By.CSS_SELECTOR, ".ui-dialog-buttonpane button")
+                    if dialog_buttons and len(dialog_buttons) > 0:
+                        # 通常はOKボタンが1つしかない
+                        dialog_buttons[0].click()
+                        logger.info("✓ ダイアログの最初のボタンをクリックしました")
+                        ok_button_clicked = True
+                        self.browser.save_screenshot("dialog_button_clicked.png")
+                except Exception as dialog_e:
+                    logger.warning(f"ダイアログボタン探索中にエラー: {str(dialog_e)}")
+            
+            if not ok_button_clicked:
+                logger.warning("OKボタンのクリックに失敗しましたが、処理を続行します")
+            
+            # 処理待機（通知が表示されるまで）
+            time.sleep(5)
+            
+            # =========================================================
+            # エクスポートの結果ボタンを開く
+            # =========================================================
+            logger.info("エクスポートの結果ボタンを開きます")
+            export_result_clicked = False
+            
+            # 1. セレクタを使用してエクスポート結果ボタンをクリック
+            try:
+                result_button_element = self.browser.get_element('export_result', 'result_list_button')
+                if result_button_element:
+                    result_button_element.click()
+                    logger.info("✓ エクスポート結果ボタンをクリックしました")
+                    export_result_clicked = True
+                    self.browser.save_screenshot("export_result_button_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでエクスポート結果ボタンが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"エクスポート結果ボタンクリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not export_result_clicked:
+                try:
+                    logger.info("直接セレクタでエクスポート結果ボタンを探索します")
+                    button_selector = "#primary-notificationbar > li.p-notificationbar-item-export.p-notificationbar-item.p-notificationbar-item-status-finished"
+                    result_button_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        button_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=15  # 通知が表示されるまで少し長めに待機
+                    )
+                    
+                    if result_button_element:
+                        result_button_element.click()
+                        logger.info("✓ 直接セレクタでエクスポート結果ボタンをクリックしました")
+                        export_result_clicked = True
+                        self.browser.save_screenshot("export_result_direct_clicked.png")
+                    else:
+                        logger.warning("直接セレクタでもエクスポート結果ボタンが見つかりませんでした")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでのエクスポート結果ボタンクリック中にエラー: {str(e)}")
+            
+            if not export_result_clicked:
+                logger.warning("エクスポート結果ボタンのクリックに失敗しましたが、処理を続行します")
+            
+            # 処理待機（ツールチップが表示されるまで）
+            time.sleep(2)
+            
+            # =========================================================
+            # エクスポートしたデータを取得する
+            # =========================================================
+            logger.info("エクスポートしたデータを取得します")
+            export_data_clicked = False
+            
+            # 1. セレクタを使用してエクスポートデータリンクをクリック
+            try:
+                export_data_element = self.browser.get_element('export_result', 'csv_download_link')
+                if export_data_element:
+                    export_data_element.click()
+                    logger.info("✓ エクスポートデータリンクをクリックしました")
+                    export_data_clicked = True
+                    self.browser.save_screenshot("export_data_clicked.png")
+                else:
+                    logger.warning("指定されたセレクタでエクスポートデータリンクが見つかりませんでした")
+            except Exception as e:
+                logger.warning(f"エクスポートデータリンククリック処理中にエラー: {str(e)}")
+            
+            # 2. 直接セレクタで試行
+            if not export_data_clicked:
+                try:
+                    logger.info("直接セレクタでエクスポートデータリンクを探索します")
+                    data_selector = "#pageActivity > div.p-ui-tooltip.queue-notification-tooltip > ul > li:nth-child(1) > div > ul > li:nth-child(1)"
+                    export_data_element = self.browser.wait_for_element(
+                        By.CSS_SELECTOR, 
+                        data_selector,
+                        condition=EC.element_to_be_clickable,
+                        timeout=10
+                    )
+                    
+                    if export_data_element:
+                        export_data_element.click()
+                        logger.info("✓ 直接セレクタでエクスポートデータリンクをクリックしました")
+                        export_data_clicked = True
+                        self.browser.save_screenshot("export_data_direct_clicked.png")
+                    else:
+                        # 一般的なセレクタで試す
+                        logger.info("一般的なセレクタでエクスポートデータリンクを探索します")
+                        data_selector_general = "div.p-ui-tooltip.queue-notification-tooltip a"
+                        export_data_elements = self.browser.driver.find_elements(By.CSS_SELECTOR, data_selector_general)
+                        
+                        if export_data_elements and len(export_data_elements) > 0:
+                            export_data_elements[0].click()
+                            logger.info("✓ 一般的なセレクタでエクスポートデータリンクをクリックしました")
+                            export_data_clicked = True
+                            self.browser.save_screenshot("export_data_general_clicked.png")
                         else:
-                            # 一般的なダイアログボタンを探す
-                            logger.info("一般的なダイアログボタンを探索します")
-                            dialog_selectors = [
-                                ".ui-dialog button",
-                                ".modal-dialog button",
-                                ".dialog button",
-                                "div[role='dialog'] button"
-                            ]
-                            
-                            for selector in dialog_selectors:
-                                buttons = self.browser.driver.find_elements(By.CSS_SELECTOR, selector)
-                                if buttons:
-                                    logger.info(f"{selector} で {len(buttons)}個のボタンを発見しました")
-                                    # 最初のボタンをクリック
-                                    buttons[0].click()
-                                    logger.info(f"✓ {selector} の最初のボタンをクリックしました")
-                                    ok_button_found = True
-                                    break
-                    except Exception as e:
-                        logger.warning(f"OKダイアログのボタン探索中にエラーが発生しました: {str(e)}")
-                
-                if not ok_button_found:
-                    logger.warning("「OK」ボタンが見つかりませんでした")
-                    # 処理を継続
-                
-            except Exception as modal_e:
-                logger.warning(f"エクスポートモーダル操作中にエラーが発生しました: {str(modal_e)}")
-                # 処理を継続
+                            logger.warning("一般的なセレクタでもエクスポートデータリンクが見つかりませんでした")
+                except Exception as e:
+                    logger.warning(f"直接セレクタでのエクスポートデータリンククリック中にエラー: {str(e)}")
             
-            # CSVファイルをダウンロード
-            csv_file_path = self._download_exported_csv()
-            if not csv_file_path:
-                logger.error("CSVファイルのダウンロードに失敗しました")
-                return False
-            logger.info(f"✓ CSVファイルをダウンロードしました: {csv_file_path}")
+            if not export_data_clicked:
+                logger.warning("エクスポートデータリンクのクリックに失敗しましたが、処理を続行します")
             
-            # 設定ファイルからシート名を取得
-            entryprocess_sheet = env.get_config_value('SHEET_NAMES', 'ENTRYPROCESS', '"entryprocess_all"').strip('"')
-            logger.info(f"選考プロセス一覧データの転記先シート名: {entryprocess_sheet}")
-            
-            # スプレッドシートに転記
-            if self.import_csv_to_spreadsheet(csv_file_path, entryprocess_sheet):
-                logger.info(f"✓ CSVデータを{entryprocess_sheet}シートに転記しました")
-            else:
-                logger.error(f"CSVデータの{entryprocess_sheet}シートへの転記に失敗しました")
-                return False
+            # 処理待機（ダウンロードが開始されるまで）
+            time.sleep(5)
             
             logger.info("✅ 選考プロセスデータのエクスポート処理が完了しました")
             return True

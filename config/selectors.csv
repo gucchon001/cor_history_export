@@ -1,0 +1,27 @@
+group,name,selector_type,selector_value,description
+porters,company_id,css,#Model_LoginForm_company_login_id,会社ID入力フィールド
+porters,username,css,#Model_LoginForm_username,ユーザー名入力フィールド
+porters,password,css,#Model_LoginForm_password,パスワード入力フィールド
+porters,login_button,css,button[type='submit'],ログインボタン
+porters_menu,logout_button,css,a[href*='logout'],ログアウトリンク
+porters_menu,search_button,css,#main > div > main > section.original-search > header > div.others > button,検索ボタン
+porters_menu,history_menu,css,#main-menu-id-8 > a,対応履歴メニュー
+porters_menu,all_history_list,css,#ui-id-367 > li:nth-child(4) > a,すべての対応履歴リンク
+porters_menu,process_list,css,a[href*='process/list'],選考プロセス一覧リンク
+porters_menu,csv_download,css,button.csv-download,CSVダウンロードボタン
+porters_menu,all_candidates,css,#ui-id-189 > li:nth-child(7) > a,すべての求職者リンク
+candidates_list,select_all_checkbox,css,#recordListView > div.jss37 > div:nth-child(2) > div > div.jss45 > span > span > input,全てチェックするチェックボックス
+candidates_list,show_more_button,css,button.list-view-show-more-button,もっと見るボタン
+candidates_list,action_button,css,#recordListView > div.jss37 > div:nth-child(2) > div > button > div,アクション一覧ボタン
+candidates_list,export_button,css,#pageActivity > div:nth-child(27) > div > ul > li.jss194.linkExport,エクスポートボタン
+export_dialog,all_raw_data,css,#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.p-ui-messagebox.ui-dialog-buttons.ui-draggable > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button.open-search-dialog.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only > span,検索画面を開く
+export_dialog,registered_to,css,#Model_Activity_displayItem_9002,登録先プルダウン
+export_dialog,execute_search,css,#execute_search,検索ボタン
+export_dialog,company_history_option,css,#porters-pdialog_2 > div.mapping > div > div > div > ul > li:nth-child(2) > label > span,企業対応履歴エクスポートオプション
+export_dialog,next_button_1,css,#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(1) > span,次へボタン（1/3）
+export_dialog,next_button_2,css,#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(2) > span,次へボタン（2/3）
+export_dialog,execute_button,css,#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:nth-child(4) > span,実行ボタン（3/3）
+export_dialog,ok_button,css,#pageActivity > div:nth-child(28) > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button > span,OKボタン
+export_result,result_list_button,css,#primary-notificationbar > li.p-notificationbar-item-export.p-notificationbar-item.p-notificationbar-item-status-finished,エクスポート結果一覧ボタン
+export_result,csv_download_link,css,div.p-ui-tooltip.queue-notification-tooltip a,CSVダウンロードリンク
+export_result,csv_download_link_xpath,xpath,//*[@id='pageSettings']/div[11]/ul/li[1]/div/ul/li[1]/a,CSVダウンロードリンク(XPath)

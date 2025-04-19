@@ -77,9 +77,9 @@ def parse_arguments():
     
     return parser.parse_args()
 
-def candidates_workflow(browser, login, **kwargs):
+def history_workflow(browser, login, **kwargs):
     """
-    求職者一覧の処理フローを実行する
+    対応履歴の処理フローを実行する
     
     Args:
         browser (PortersBrowser): ブラウザオブジェクト
@@ -89,14 +89,14 @@ def candidates_workflow(browser, login, **kwargs):
     Returns:
         bool: 処理が成功した場合はTrue、失敗した場合はFalse
     """
-    logger.info("求職者一覧のエクスポート処理フローを実行します")
+    logger.info("対応履歴のエクスポート処理フローを実行します")
     operations = PortersOperations(browser)
     success = operations.execute_operations_flow()
     
     if success:
-        logger.info("求職者一覧のエクスポート処理フローが正常に完了しました")
+        logger.info("対応履歴のエクスポート処理フローが正常に完了しました")
     else:
-        logger.error("求職者一覧のエクスポート処理フローに失敗しました")
+        logger.error("対応履歴のエクスポート処理フローに失敗しました")
         
     return success
 
@@ -282,7 +282,7 @@ def main():
         # 処理フローの選択
         workflow_func = None
         if args.process == 'candidates':
-            workflow_func = candidates_workflow
+            workflow_func = history_workflow
         elif args.process == 'entryprocess':
             workflow_func = entryprocess_workflow
         elif args.process == 'both':

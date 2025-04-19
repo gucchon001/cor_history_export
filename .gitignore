@@ -89,6 +89,9 @@ lib64/
 *.pdf
 output/
 
+# Exception for selectors.csv
+!config/selectors.csv
+
 # Test cache
 .pytest_cache/
 .coverage

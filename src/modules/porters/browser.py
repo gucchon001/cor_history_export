@@ -1071,4 +1071,51 @@ class PortersBrowser:
         except Exception as e:
             error_message = f"要素の待機中にエラーが発生しました: {by}={value}"
             self._notify_error(error_message, e)
-            return None 
+            return None
+
+    def click_element_direct(self, element, use_javascript=False):
+        """
+        直接WebElement要素をクリックする
+        
+        Args:
+            element (WebElement): クリック対象の要素
+            use_javascript (bool): JavaScriptを使用してクリックするかどうか
+            
+        Returns:
+            bool: クリックが成功した場合はTrue、失敗した場合はFalse
+        """
+        try:
+            if not self.driver:
+                logger.error("WebDriverが初期化されていません")
+                return False
+            
+            # 要素が画面内に表示されるようにスクロール
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+            time.sleep(1)  # スクロール完了を待機
+            
+            # クリック実行
+            if use_javascript:
+                logger.info("JavaScriptを使用して要素を直接クリックします")
+                self.driver.execute_script("arguments[0].click();", element)
+            else:
+                logger.info("要素を直接クリックします")
+                element.click()
+            
+            logger.info("✓ 要素の直接クリックに成功しました")
+            return True
+            
+        except Exception as e:
+            logger.error(f"要素の直接クリック中にエラーが発生しました: {str(e)}")
+            self.save_screenshot("click_direct_error.png")
+            
+            # JavaScriptでのクリックを試行（通常のクリックが失敗した場合）
+            if not use_javascript:
+                try:
+                    logger.info("通常のクリックが失敗したため、JavaScriptでクリックを試みます")
+                    self.driver.execute_script("arguments[0].click();", element)
+                    logger.info("✓ JavaScriptを使用した要素の直接クリックに成功しました")
+                    return True
+                except Exception as js_e:
+                    logger.error(f"JavaScriptを使用した要素の直接クリックにも失敗しました: {str(js_e)}")
+            
+            return False 
