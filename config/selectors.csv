@@ -9,7 +9,6 @@ porters_menu,history_menu,css,#main-menu-id-8 > a,対応履歴メニュー
 porters_menu,all_history_list,css,#ui-id-367 > li:nth-child(4) > a,すべての対応履歴リンク
 porters_menu,process_list,css,a[href*='process/list'],選考プロセス一覧リンク
 porters_menu,csv_download,css,button.csv-download,CSVダウンロードボタン
-porters_menu,all_candidates,css,#ui-id-189 > li:nth-child(7) > a,すべての求職者リンク
 candidates_list,select_all_checkbox,css,#recordListView > div.jss37 > div:nth-child(2) > div > div.jss45 > span > span > input,全てチェックするチェックボックス
 candidates_list,show_more_button,css,button.list-view-show-more-button,もっと見るボタン
 candidates_list,action_button,css,#recordListView > div.jss37 > div:nth-child(2) > div > button > div,アクション一覧ボタン
@@ -24,4 +23,3 @@ export_dialog,execute_button,css,#pageActivity > div.ui-dialog.ui-widget.ui-widg
 export_dialog,ok_button,css,#pageActivity > div:nth-child(28) > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button > span,OKボタン
 export_result,result_list_button,css,#primary-notificationbar > li.p-notificationbar-item-export.p-notificationbar-item.p-notificationbar-item-status-finished,エクスポート結果一覧ボタン
 export_result,csv_download_link,css,div.p-ui-tooltip.queue-notification-tooltip a,CSVダウンロードリンク
-export_result,csv_download_link_xpath,xpath,//*[@id='pageSettings']/div[11]/ul/li[1]/div/ul/li[1]/a,CSVダウンロードリンク(XPath)

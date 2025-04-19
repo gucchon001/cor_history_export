@@ -12,6 +12,8 @@ import os
 import sys
 import time
 import argparse
+import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 # プロジェクトのルートディレクトリをPYTHONPATHに追加
@@ -22,7 +24,6 @@ from src.utils.environment import EnvironmentUtils as env
 from src.utils.logging_config import get_logger
 from src.modules.porters.browser import PortersBrowser
 from src.modules.porters.operations import PortersOperations
-from src.modules.spreadsheet_aggregator import SpreadsheetAggregator
 from src.utils.slack_notifier import SlackNotifier
 
 logger = get_logger(__name__)
@@ -70,10 +71,8 @@ def parse_arguments():
     parser.add_argument('--skip-operations', action='store_true', help='業務操作をスキップする')
     parser.add_argument('--log-level', default='INFO', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], 
                         help='ログレベル (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
-    parser.add_argument('--process', choices=['candidates', 'entryprocess', 'both', 'sequential'], default='candidates',
-                        help='実行する処理フロー (candidates: 求職者一覧のエクスポート, entryprocess: 選考プロセス一覧の表示, both: 両方を順に実行, sequential: 求職者一覧処理後に選考プロセスも実行)')
-    parser.add_argument('--aggregate', choices=['users', 'entryprocess', 'both', 'none'], default='none',
-                        help='実行する集計処理の種類 (users: 求職者フェーズ別集計, entryprocess: 選考プロセス集計, both: 両方を実行, none: 集計処理を実行しない)')
+    parser.add_argument('--process', choices=['candidates', 'entryprocess', 'both', 'sequential', 'correspondence'], default='correspondence',
+                        help='実行する処理フロー (candidates: 求職者一覧のエクスポート, entryprocess: 選考プロセス一覧の表示, both: 両方を順に実行, sequential: 求職者一覧処理後に選考プロセスも実行, correspondence: 対応履歴のエクスポート)')
     
     return parser.parse_args()
 
@@ -196,51 +195,6 @@ def sequential_workflow(browser, login, **kwargs):
     
     return overall_success, (candidates_success, entryprocess_success)
 
-def run_aggregation(aggregate_option):
-    """
-    集計処理を実行する
-    
-    Args:
-        aggregate_option (str): 実行する集計処理の種類
-        
-    Returns:
-        bool: 集計処理が成功した場合はTrue、失敗した場合はFalse
-    """
-    logger.info("=== スプレッドシート集計処理を開始します ===")
-    aggregator = SpreadsheetAggregator()
-    
-    # 集計処理を実行
-    users_success, entryprocess_success = aggregator.run_aggregation(aggregate_option)
-    
-    # 結果の集計
-    success_count = 0
-    total_count = 0
-    
-    if aggregate_option in ['users', 'both']:
-        total_count += 1
-        if users_success:
-            success_count += 1
-            logger.info("✅ 求職者フェーズ別集計処理が正常に完了しました")
-        else:
-            logger.error("❌ 求職者フェーズ別集計処理に失敗しました")
-    
-    if aggregate_option in ['entryprocess', 'both']:
-        total_count += 1
-        if entryprocess_success:
-            success_count += 1
-            logger.info("✅ 選考プロセス集計処理が正常に完了しました")
-        else:
-            logger.error("❌ 選考プロセス集計処理に失敗しました")
-    
-    # 集計処理の結果ステータス
-    overall_success = success_count == total_count
-    if overall_success:
-        logger.info("✅ すべての集計処理が正常に完了しました")
-    else:
-        logger.warning(f"⚠️ 実行された {total_count} 件の集計処理のうち、{success_count} 件が成功し、{total_count - success_count} 件が失敗しました")
-    
-    return overall_success, (users_success, entryprocess_success)
-
 def main():
     """
     メイン処理
@@ -269,7 +223,6 @@ def main():
     logger.info(f"実行環境: {args.env}")
     logger.info(f"ログレベル: {args.log_level}")
     logger.info(f"処理フロー: {args.process}")
-    logger.info(f"集計処理: {args.aggregate}")
     
     # 設定ファイルのパス
     selectors_path = os.path.join(root_dir, "config", "selectors.csv")
@@ -289,6 +242,8 @@ def main():
             workflow_func = both_workflow
         elif args.process == 'sequential':
             workflow_func = sequential_workflow
+        elif args.process == 'correspondence':
+            workflow_func = history_workflow
         
         # ワークフローパラメータの準備
         workflow_params = {
@@ -305,11 +260,6 @@ def main():
         )
     else:
         logger.info("業務操作をスキップします")
-    
-    # 集計処理の実行（オプションが指定されている場合）
-    if args.aggregate != 'none':
-        aggregate_success, _ = run_aggregation(args.aggregate)
-        success = success and aggregate_success
     
     # 終了処理
     if success:

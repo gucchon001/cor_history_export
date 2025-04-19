@@ -2,19 +2,20 @@ pandas
 pytest
 requests==2.31.0
 python-dotenv==1.0.0
-google-api-python-client==2.108.0
-google-auth-httplib2==0.1.1
-google-auth-oauthlib==1.1.0
 anytree
 openai==1.55.3
 icecream
-gspread>=5.12.0
-oauth2client
-selenium
 selenium>=4.16.0
 chromedriver-binary
 webdriver-manager>=4.0.1
 bs4
 python-dotenv
 pyinstaller
-google-auth>=2.22.0
+
+# スプレッドシート関連（対応履歴のCSVエクスポートのみを行う場合は不要）
+# google-api-python-client==2.108.0
+# google-auth-httplib2==0.1.1
+# google-auth-oauthlib==1.1.0
+# gspread>=5.12.0
+# oauth2client
+# google-auth>=2.22.0
