@@ -27,9 +27,17 @@
 *   「アクションボタン」をクリック (`candidates_list.action_button`)
 *   「エクスポート」をクリック (`candidates_list.export_button`)
 *   「検索画面を開く」ボタンをクリック (`export_dialog.all_raw_data`)
-*   検索条件を入力 (例: 「登録先」に値を入力 `export_dialog.registered_to`)
+*   検索条件を入力:
+    *   「登録先」プルダウンから「企業」を選択 (`export_dialog.registered_to`)
+        *   Select要素を使用して「企業」オプションを選択
+        *   テキスト完全一致の場合は `select_by_visible_text("企業")` を使用
+        *   部分一致の場合は、すべてのオプションを取得し「企業」を含むオプションを選択
+        *   上記方法で失敗した場合はJavaScriptを使用して直接値を設定
 *   「検索」ボタンをクリック (`export_dialog.execute_search`)
+    *   セレクタを使用してクリック（`#execute_search`）
+    *   セレクタが失敗した場合は、要素を直接取得してクリック
 *   検索結果が表示されることを確認
+*   検索結果画面のスクリーンショットを保存（`after_search_button_click.png`）
 
 #### 2.3 対応履歴データのエクスポートとダウンロード
 *   **全件エクスポートの場合:**
