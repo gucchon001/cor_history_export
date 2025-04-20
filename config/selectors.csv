@@ -9,10 +9,10 @@ porters_menu,history_menu,css,#main-menu-id-8 > a,対応履歴メニュー
 porters_menu,all_history_list,css,#ui-id-367 > li:nth-child(4) > a,すべての対応履歴リンク
 porters_menu,process_list,css,a[href*='process/list'],選考プロセス一覧リンク
 porters_menu,csv_download,css,button.csv-download,CSVダウンロードボタン
-candidates_list,select_all_checkbox,css,#recordListView > div.jss37 > div:nth-child(2) > div > div.jss45 > span > span > input,全てチェックするチェックボックス
-candidates_list,show_more_button,css,button.list-view-show-more-button,もっと見るボタン
-candidates_list,action_button,css,#recordListView > div.jss37 > div:nth-child(2) > div > button > div,アクション一覧ボタン
-candidates_list,export_button,css,#pageActivity > div:nth-child(27) > div > ul > li.jss194.linkExport,エクスポートボタン
+correspondence_list,select_all_checkbox,css,#recordListView > div.jss37 > div:nth-child(2) > div > div.jss45 > span > span > input,全てチェックするチェックボックス
+correspondence_list,show_more_button,css,button.list-view-show-more-button,もっと見るボタン
+correspondence_list,action_button,css,#recordListView > div.jss37 > div:nth-child(2) > div > button > div,アクション一覧ボタン
+correspondence_list,export_button,css,#pageActivity > div:nth-child(27) > div > ul > li.jss194.linkExport,エクスポートボタン
 export_dialog,all_raw_data,css,#pageActivity > div.ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.p-ui-messagebox.ui-dialog-buttons.ui-draggable > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button.open-search-dialog.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only > span,検索画面を開く
 export_dialog,registered_to,css,#Model_Activity_displayItem_9002,登録先プルダウン
 export_dialog,execute_search,css,#execute_search,検索ボタン

@@ -24,8 +24,8 @@
 
 #### 2.2 (オプション) 検索条件の指定と実行
 *   **注意:** このステップは特定の条件で絞り込む場合に実行します。全件エクスポートの場合はスキップします。
-*   「アクションボタン」をクリック (`candidates_list.action_button`)
-*   「エクスポート」をクリック (`candidates_list.export_button`)
+*   「アクションボタン」をクリック (`correspondence_list.action_button`)
+*   「エクスポート」をクリック (`correspondence_list.export_button`)
 *   「検索画面を開く」ボタンをクリック (`export_dialog.all_raw_data`)
 *   検索条件を入力:
     *   「登録先」プルダウンから「企業」を選択 (`export_dialog.registered_to`)
@@ -41,9 +41,9 @@
 
 #### 2.3 対応履歴データのエクスポートとダウンロード
 *   **全件エクスポートの場合:**
-    *   「全てチェック」チェックボックスをクリック (`candidates_list.select_all_checkbox`)
-    *   「アクションボタン」をクリック (`candidates_list.action_button`)
-    *   「エクスポート」をクリック (`candidates_list.export_button`)
+    *   「全てチェック」チェックボックスをクリック (`correspondence_list.select_all_checkbox`)
+    *   「アクションボタン」をクリック (`correspondence_list.action_button`)
+    *   「エクスポート」をクリック (`correspondence_list.export_button`)
 *   **共通フロー:**
     *   エクスポートモーダルで「企業対応履歴エクスポート」を選択 (`export_dialog.company_history_option`)
     *   「次へ」ボタンをクリック (1/3) (`export_dialog.next_button_1`)
@@ -94,18 +94,11 @@
 
 1. `execute_common_history_flow`: 対応履歴関連の共通処理フロー（「対応履歴」メニュークリック）
 2. `click_all_history`: 「すべての対応履歴」リンクをクリック
-3. `select_all_candidates`: 「全てチェック」チェックボックスをクリック
+3. `select_all_correspondence`: 「全てチェック」チェックボックスをクリック
 4. `click_show_more_repeatedly`: 「もっと見る」ボタンを繰り返しクリックして、すべての対応履歴を表示
 5. `export_history_data`: 対応履歴データのエクスポート処理を実行
 
 ## 実行オプション
-- `--process`: 処理フローを指定
-    - `candidates`: 求職者一覧のみエクスポート
-    - `entryprocess`: 選考プロセス一覧のみエクスポート
-    - `correspondence`: 対応履歴のみエクスポート
-    - `both`: 求職者と選考プロセスを実行
-    - `all`: 求職者、選考プロセス、対応履歴をすべて実行
-    - `sequential`: 求職者取得後に選考プロセスも取得
 - `--headless`: ブラウザを表示せずにヘッドレスモードで実行
 - `--env [development|production]`: 実行環境を指定
 - `--skip-operations`: 業務操作をスキップし、ログイン処理のみを実行
@@ -115,11 +108,11 @@
 
 ### コマンドライン実行
 ```bash
-# 対応履歴のみエクスポート
-python -m src.main --process correspondence
+# 対応履歴のエクスポート実行
+python -m src.main
 
-# すべてのデータをエクスポート
-python -m src.main --process all
+# ヘッドレスモードで実行
+python -m src.main --headless
 ```
 
 ## 備考

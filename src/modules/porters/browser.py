@@ -160,7 +160,7 @@ class PortersBrowser:
                     'selector_type': 'css',
                     'selector_value': "#main > div > main > section.original-search > header > div.others > button"
                 },
-                'candidate_list': {
+                'correspondence_list': {
                     'selector_type': 'css',
                     'selector_value': "a[href*='candidate/list']"
                 },

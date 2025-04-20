@@ -179,9 +179,9 @@ class PortersOperations:
             self.browser.save_screenshot("all_history_error.png")
             return False
     
-    def select_all_candidates(self):
+    def select_all_correspondence(self):
         """
-        求職者一覧画面で「全てチェック」チェックボックスをクリックする
+        対応履歴一覧画面で「全てチェック」チェックボックスをクリックする
         
         Returns:
             bool: 処理が成功した場合はTrue、失敗した場合はFalse
@@ -194,7 +194,7 @@ class PortersOperations:
             self.browser.save_screenshot("before_select_all.png")
             
             # 「全てチェック」チェックボックスをクリック
-            if not self.browser.click_element('candidates_list', 'select_all_checkbox'):
+            if not self.browser.click_element('correspondence_list', 'select_all_checkbox'):
                 logger.error("「全てチェック」チェックボックスのクリックに失敗しました")
                 
                 # 直接CSSセレクタを使用して再試行
@@ -248,7 +248,7 @@ class PortersOperations:
     
     def click_show_more_repeatedly(self, max_attempts=20, interval=5):
         """
-        「もっと見る」ボタンを繰り返しクリックして、すべての求職者を表示する
+        「もっと見る」ボタンを繰り返しクリックして、すべての対応履歴を表示する
         
         Args:
             max_attempts (int): 最大試行回数
@@ -274,7 +274,7 @@ class PortersOperations:
                     # まずセレクタ情報を使用
                     show_more_button = None
                     try:
-                        show_more_button = self.browser.get_element('candidates_list', 'show_more_button')
+                        show_more_button = self.browser.get_element('correspondence_list', 'show_more_button')
                     except:
                         pass
                     
@@ -435,7 +435,7 @@ class PortersOperations:
             logger.info("=== 対応履歴データのエクスポート処理を開始します ===")
             
             # アクションリストボタンをクリック
-            if not self.browser.click_element('candidates_list', 'action_button'):
+            if not self.browser.click_element('correspondence_list', 'action_button'):
                 logger.error("アクションリストボタンのクリックに失敗しました")
                 
                 # 直接CSSセレクタを使用してアクションボタンを探索します
@@ -479,7 +479,7 @@ class PortersOperations:
             
             # 2. テキスト検索で見つからなかった場合、セレクタを使用
             if not export_button_clicked:
-                if not self.browser.click_element('candidates_list', 'export_button'):
+                if not self.browser.click_element('correspondence_list', 'export_button'):
                     logger.error("セレクタでのエクスポートボタンのクリックに失敗しました")
                     
                     # 3. 代替セレクタを使用して再試行
@@ -635,7 +635,7 @@ class PortersOperations:
                 checkbox_clicked = False
                 
                 # 標準セレクタでクリック
-                if self.browser.click_element('candidates_list', 'select_all_checkbox'):
+                if self.browser.click_element('correspondence_list', 'select_all_checkbox'):
                     logger.info("✓ 「全てチェック」チェックボックスをクリックしました")
                     checkbox_clicked = True
                 else:
@@ -675,7 +675,7 @@ class PortersOperations:
                 action_button_clicked = False
                 
                 # 標準セレクタでクリック
-                if self.browser.click_element('candidates_list', 'action_button'):
+                if self.browser.click_element('correspondence_list', 'action_button'):
                     logger.info("✓ 「アクションボタン」をクリックしました")
                     action_button_clicked = True
                 else:
@@ -737,7 +737,7 @@ class PortersOperations:
                 
                 # テキスト検索で見つからなかった場合、セレクタを使用
                 if not export_button_clicked:
-                    if self.browser.click_element('candidates_list', 'export_button'):
+                    if self.browser.click_element('correspondence_list', 'export_button'):
                         logger.info("✓ セレクタでエクスポートボタンをクリックしました")
                         export_button_clicked = True
                 
@@ -1505,9 +1505,9 @@ class PortersOperations:
                 return False
             
             # 対応履歴一覧画面で「全てチェック」チェックボックスをクリック
-            if not self.select_all_candidates():
-                logger.error("「全てチェック」チェックボックスのクリック処理に失敗しました")
-                return False
+            if not self.select_all_correspondence():
+                logger.warning("「全てチェック」チェックボックスのクリックに失敗しましたが、処理を継続します")
+                # フェイルセーフとして、単一行のチェックを試す処理をここに追加することも可能
             
             # 「もっと見る」ボタンを繰り返しクリックして、すべての対応履歴を表示
             if not self.click_show_more_repeatedly():
@@ -1531,22 +1531,22 @@ class PortersOperations:
     
     def execute_both_processes(self):
         """
-        対応履歴と選考プロセスの両方の処理を順に実行する
+        対応履歴と選考プロセスの両方を連続して処理する
         
         Returns:
-            tuple: (対応履歴処理の成否, 選考プロセス処理の成否)
+            tuple: (correspondence_success, entryprocess_success) 各処理の成功/失敗
         """
+        
         try:
-            logger.info("=== 対応履歴と選考プロセスの両方の処理を順に実行します ===")
+            logger.info("=== 対応履歴と選考プロセスの両方の処理を開始します ===")
             
-            # 対応履歴のエクスポート処理フロー
-            logger.info("1. 対応履歴のエクスポート処理フローを実行します")
-            candidates_success = self.execute_operations_flow()
-            if not candidates_success:
-                logger.error("対応履歴のエクスポート処理フローに失敗しました")
-            else:
-                logger.info("対応履歴のエクスポート処理フローが正常に完了しました")
+            # 1. 対応履歴の処理
+            logger.info("1. 対応履歴のエクスポート処理を実行します")
+            correspondence_success = self.execute_operations_flow()
             
+            if not correspondence_success:
+                logger.error("対応履歴のエクスポート処理に失敗しました")
+                
             # 処理間の待機時間
             logger.info("次の処理に進む前に10秒間待機します")
             time.sleep(10)
@@ -1566,12 +1566,12 @@ class PortersOperations:
                 logger.info("選考プロセス一覧の表示処理フローが正常に完了しました")
             
             # 両方の処理結果をログに出力
-            if candidates_success and entryprocess_success:
+            if correspondence_success and entryprocess_success:
                 logger.info("✅ 両方の処理フローが正常に完了しました")
             else:
                 logger.warning("⚠️ 一部の処理フローが失敗しました")
             
-            return (candidates_success, entryprocess_success)
+            return (correspondence_success, entryprocess_success)
             
         except Exception as e:
             logger.error(f"両方の処理フロー中にエラーが発生しました: {str(e)}")
