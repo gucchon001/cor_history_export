@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Optional
 import re
 import importlib.util
+import shutil
 
 from src.utils.logging_config import get_logger
 from src.utils.helpers import find_latest_csv_in_downloads
@@ -181,19 +182,15 @@ class PortersOperations:
     
     def select_all_correspondence(self):
         """
-        対応履歴一覧画面で「全てチェック」チェックボックスをクリックする
+        「全てチェック」チェックボックスをクリックする
         
         Returns:
             bool: 処理が成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            logger.info("=== 「全てチェック」チェックボックスのクリック処理を開始します ===")
+            logger.info("=== 「全てチェック」チェックボックスをクリックします ===")
             
-            # 画面の読み込みを待機
-            time.sleep(3)
-            self.browser.save_screenshot("before_select_all.png")
-            
-            # 「全てチェック」チェックボックスをクリック
+            # 全てチェックボックスをクリック
             if not self.browser.click_element('correspondence_list', 'select_all_checkbox'):
                 logger.error("「全てチェック」チェックボックスのクリックに失敗しました")
                 
@@ -248,11 +245,11 @@ class PortersOperations:
     
     def click_show_more_repeatedly(self, max_attempts=20, interval=5):
         """
-        「もっと見る」ボタンを繰り返しクリックして、すべての対応履歴を表示する
+        「もっと見る」ボタンを繰り返しクリックして全データを表示する
         
         Args:
-            max_attempts (int): 最大試行回数
-            interval (int): クリック間隔（秒）
+            max_attempts (int): 最大試行回数（デフォルト: 20）
+            interval (int): クリック間隔（秒）（デフォルト: 5）
             
         Returns:
             bool: 処理が成功した場合はTrue、失敗した場合はFalse
@@ -319,7 +316,7 @@ class PortersOperations:
                     # エラーが発生しても処理を継続
                     time.sleep(interval)
             
-            # 「もっと見る」ボタンがなくなった後、データグリッドコンテナを一番下までスクロール
+            # データグリッドコンテナのスクロールを試みる
             logger.info("データグリッドコンテナを一番下までスクロールします")
             
             # データグリッドコンテナを探す（複数のセレクタを試す）
@@ -343,7 +340,8 @@ class PortersOperations:
                         data_grid_container = elements[0]
                         logger.info(f"データグリッドコンテナを発見しました: {selector}")
                         break
-                except Exception:
+                except Exception as e:
+                    logger.debug(f"セレクタ {selector} の確認中にエラー: {str(e)}")
                     continue
             
             if data_grid_container:
@@ -352,10 +350,10 @@ class PortersOperations:
                     container_height = self.browser.driver.execute_script("return arguments[0].scrollHeight", data_grid_container)
                     logger.info(f"データグリッドコンテナの高さ: {container_height}px")
                     
-                    # 段階的にスクロールして、すべてのデータを確実に読み込む
+                    # 各ステップでスクロール
                     scroll_steps = 5  # スクロールのステップ数
                     for step in range(1, scroll_steps + 1):
-                        scroll_position = int(container_height * step / scroll_steps)
+                        scroll_position = (container_height // scroll_steps) * step
                         self.browser.driver.execute_script(f"arguments[0].scrollTop = {scroll_position}", data_grid_container)
                         logger.info(f"データグリッドコンテナをスクロール: {scroll_position}px ({step}/{scroll_steps})")
                         time.sleep(1)  # 各ステップ後に少し待機
@@ -370,13 +368,10 @@ class PortersOperations:
                     
                 except Exception as e:
                     logger.warning(f"データグリッドコンテナのスクロール中にエラーが発生しました: {str(e)}")
-                    self._scroll_page_fallback()
+                    # スクロールに失敗しても処理は続行
             else:
-                logger.warning("データグリッドコンテナが見つかりませんでした")
+                logger.warning("データグリッドコンテナが見つかりませんでした。代替手段でページ全体をスクロールします")
                 self._scroll_page_fallback()
-            
-            # 最終的な画面のスクリーンショットを取得
-            self.browser.save_screenshot("after_show_more_all.png")
             
             logger.info(f"✅ 「もっと見る」ボタンの繰り返しクリック処理が完了しました（{attempt}回実行）")
             return True
@@ -390,10 +385,8 @@ class PortersOperations:
     
     def _scroll_page_fallback(self):
         """
-        ページ全体をスクロールするフォールバック処理
-        
-        データグリッドコンテナが見つからない場合や、
-        スクロールに失敗した場合に使用する代替手段
+        データグリッドコンテナが見つからない場合の代替手段として、
+        ページ全体をスクロールする
         """
         try:
             logger.info("代替手段: ページ全体を一番下までスクロールします")
@@ -1387,11 +1380,48 @@ class PortersOperations:
                 logger.info("CSVファイルのダウンロードを待機中...")
                 time.sleep(10)  # ダウンロード開始のための初期待機
                 
+                # 設定から保存ディレクトリとファイル名を取得
+                download_dir = env.get_config_value("DOWNLOAD", "DIRECTORY", "data/exports")
+                download_filename = env.get_config_value("DOWNLOAD", "FILENAME", "porter_history_export")
+                
+                # 設定ファイルから読み込んだパスと名前の引用符を削除
+                if isinstance(download_dir, str):
+                    download_dir = download_dir.strip('"\'')
+                if isinstance(download_filename, str):
+                    download_filename = download_filename.strip('"\'')
+                
+                # ディレクトリが存在しない場合は作成
+                # 絶対パスの場合はそのまま使用し、相対パスの場合はプロジェクトルートからの相対パスとして扱う
+                download_path = Path(download_dir)
+                if download_path.is_absolute():
+                    full_download_dir = download_path
+                    logger.info(f"絶対パスのダウンロードディレクトリを使用します: {full_download_dir}")
+                else:
+                    project_root = env.get_project_root()
+                    full_download_dir = project_root / download_dir
+                    logger.info(f"プロジェクトルートからの相対パスでダウンロードディレクトリを使用します: {full_download_dir}")
+                
+                os.makedirs(full_download_dir, exist_ok=True)
+                logger.info(f"ダウンロード保存先ディレクトリを確認しました: {full_download_dir}")
+                
                 # ダウンロードディレクトリで新しいCSVファイルを待機
                 csv_path = find_latest_csv_in_downloads()
                 if csv_path:
-                    logger.info(f"CSVファイルのダウンロードが完了しました: {csv_path}")
-                    return csv_path
+                    # タイムスタンプを付与したファイル名を生成
+                    timestamp = time.strftime("%Y%m%d_%H%M%S")
+                    new_filename = f"{download_filename}_{timestamp}.csv"
+                    destination_path = os.path.join(full_download_dir, new_filename)
+                    
+                    # 移動またはコピー
+                    try:
+                        shutil.copy2(csv_path, destination_path)
+                        logger.info(f"CSVファイルのダウンロードが完了し、指定した場所にコピーしました: {destination_path}")
+                        return destination_path
+                    except Exception as e:
+                        logger.error(f"CSVファイルのコピー中にエラーが発生しました: {str(e)}")
+                        # コピーに失敗した場合でも元のパスを返す
+                        logger.info(f"元のCSVファイルを使用します: {csv_path}")
+                        return csv_path
                 else:
                     logger.warning("CSVファイルのダウンロードを検出できませんでした")
                     if attempt < max_retries - 1:
@@ -1401,6 +1431,22 @@ class PortersOperations:
                         # 最終試行でも失敗した場合は、最新のCSVファイルを探す
                         latest_csv = find_latest_csv_in_downloads()
                         if latest_csv:
+                            # タイムスタンプを付与したファイル名を生成
+                            timestamp = time.strftime("%Y%m%d_%H%M%S")
+                            new_filename = f"{download_filename}_{timestamp}.csv"
+                            destination_path = os.path.join(full_download_dir, new_filename)
+                            
+                            # 移動またはコピー
+                            try:
+                                shutil.copy2(latest_csv, destination_path)
+                                logger.info(f"最新のCSVファイルを使用し、指定した場所にコピーしました: {destination_path}")
+                                return destination_path
+                            except Exception as e:
+                                logger.error(f"CSVファイルのコピー中にエラーが発生しました: {str(e)}")
+                                # コピーに失敗した場合でも元のパスを返す
+                                logger.info(f"最新のCSVファイルを使用します: {latest_csv}")
+                                return latest_csv
+                            
                             logger.info(f"最新のCSVファイルを使用します: {latest_csv}")
                             return latest_csv
                         logger.error("CSVファイルをダウンロードできませんでした")
