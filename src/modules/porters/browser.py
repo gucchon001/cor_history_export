@@ -216,9 +216,26 @@ class PortersBrowser:
             from webdriver_manager.chrome import ChromeDriverManager
             from selenium.webdriver.chrome.service import Service as ChromeService
             
-            # ダウンロード設定
-            download_dir = os.path.join(os.getcwd(), "downloads")
+            # ダウンロード設定 - settings.iniから取得
+            # [DOWNLOAD]セクションからDIRECTORYの値を取得、なければデフォルト値を使用
+            download_dir_setting = env.get_config_value("DOWNLOAD", "DIRECTORY", "downloads")
+            
+            # 設定ファイルから読み込んだパスの引用符を削除
+            if isinstance(download_dir_setting, str):
+                download_dir_setting = download_dir_setting.strip('"\'')
+            
+            # 絶対パスか相対パスかを判断
+            download_path = Path(download_dir_setting)
+            if download_path.is_absolute():
+                download_dir = str(download_path)
+                logger.info(f"絶対パスのダウンロードディレクトリを使用します: {download_dir}")
+            else:
+                download_dir = os.path.join(os.getcwd(), download_dir_setting)
+                logger.info(f"相対パスのダウンロードディレクトリを使用します: {download_dir}")
+            
+            # ディレクトリが存在しない場合は作成
             os.makedirs(download_dir, exist_ok=True)
+            logger.info(f"ダウンロード先ディレクトリを設定します: {download_dir}")
             
             prefs = {
                 "download.default_directory": download_dir,

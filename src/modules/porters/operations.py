@@ -22,7 +22,7 @@ import importlib.util
 import shutil
 
 from src.utils.logging_config import get_logger
-from src.utils.helpers import find_latest_csv_in_downloads
+from src.utils.helpers import find_latest_csv_in_downloads, find_latest_file_by_extension, extract_csv_differences, count_csv_records
 from src.utils.environment import EnvironmentUtils as env
 
 logger = get_logger(__name__)
@@ -1261,16 +1261,17 @@ class PortersOperations:
             self.browser.save_screenshot("export_history_data_error.png")
             return False
     
-    def _download_exported_csv(self, max_retries: int = 3, retry_interval: int = 45) -> Optional[str]:
+    def _download_exported_csv(self, max_retries: int = 3, retry_interval: int = 45, max_file_age_minutes: int = 30) -> Optional[str]:
         """
         エクスポートされたCSVファイルをダウンロードする
         
         Args:
             max_retries (int): 最大リトライ回数（デフォルト: 3）
             retry_interval (int): リトライ間隔（秒）（デフォルト: 45）
+            max_file_age_minutes (int): 検索するCSVファイルの最大経過時間（分）（デフォルト: 30）
             
         Returns:
-            Optional[str]: ダウンロードされたCSVファイルのパス、失敗した場合はNone
+            Optional[str]: 処理後のCSVファイルのパス、失敗した場合はNone
         """
         # エクスポート結果リストを開く
         for attempt in range(max_retries):
@@ -1381,46 +1382,107 @@ class PortersOperations:
                 time.sleep(10)  # ダウンロード開始のための初期待機
                 
                 # 設定から保存ディレクトリとファイル名を取得
-                download_dir = env.get_config_value("DOWNLOAD", "DIRECTORY", "data/exports")
+                browser_download_dir = env.get_config_value("DOWNLOAD", "BROWSER_DOWNLOAD_DIR", "")
+                output_dir = env.get_config_value("DOWNLOAD", "OUTPUT_DIRECTORY", "data/downloads")
                 download_filename = env.get_config_value("DOWNLOAD", "FILENAME", "porter_history_export")
                 
                 # 設定ファイルから読み込んだパスと名前の引用符を削除
-                if isinstance(download_dir, str):
-                    download_dir = download_dir.strip('"\'')
+                if isinstance(browser_download_dir, str):
+                    browser_download_dir = browser_download_dir.strip('"\'')
+                if isinstance(output_dir, str):
+                    output_dir = output_dir.strip('"\'')
                 if isinstance(download_filename, str):
                     download_filename = download_filename.strip('"\'')
                 
-                # ディレクトリが存在しない場合は作成
-                # 絶対パスの場合はそのまま使用し、相対パスの場合はプロジェクトルートからの相対パスとして扱う
-                download_path = Path(download_dir)
-                if download_path.is_absolute():
-                    full_download_dir = download_path
-                    logger.info(f"絶対パスのダウンロードディレクトリを使用します: {full_download_dir}")
+                # 出力ディレクトリのパスを取得（相対パス → 絶対パス変換）
+                output_path = Path(output_dir)
+                if output_path.is_absolute():
+                    full_output_dir = output_path
+                    logger.info(f"絶対パスの出力ディレクトリを使用します: {full_output_dir}")
                 else:
                     project_root = env.get_project_root()
-                    full_download_dir = project_root / download_dir
-                    logger.info(f"プロジェクトルートからの相対パスでダウンロードディレクトリを使用します: {full_download_dir}")
+                    full_output_dir = project_root / output_dir
+                    logger.info(f"プロジェクトルートからの相対パスで出力ディレクトリを使用します: {full_output_dir}")
                 
-                os.makedirs(full_download_dir, exist_ok=True)
-                logger.info(f"ダウンロード保存先ディレクトリを確認しました: {full_download_dir}")
+                # ディレクトリが存在しない場合は作成
+                os.makedirs(full_output_dir, exist_ok=True)
+                logger.info(f"出力ディレクトリを確認しました: {full_output_dir}")
                 
-                # ダウンロードディレクトリで新しいCSVファイルを待機
-                csv_path = find_latest_csv_in_downloads()
+                # ダウンロードディレクトリで新しいCSVファイルを待機（時間制限はそのまま維持）
+                csv_path = find_latest_csv_in_downloads(max_age_minutes=max_file_age_minutes, 
+                                                       retry_count=3, 
+                                                       retry_interval=10)
                 if csv_path:
-                    # タイムスタンプを付与したファイル名を生成
-                    timestamp = time.strftime("%Y%m%d_%H%M%S")
-                    new_filename = f"{download_filename}_{timestamp}.csv"
-                    destination_path = os.path.join(full_download_dir, new_filename)
-                    
-                    # 移動またはコピー
+                    # 差分抽出処理の実装
                     try:
-                        shutil.copy2(csv_path, destination_path)
-                        logger.info(f"CSVファイルのダウンロードが完了し、指定した場所にコピーしました: {destination_path}")
-                        return destination_path
+                        logger.info(f"新しくダウンロードされたCSVファイル: {csv_path}")
+                        
+                        # 新しくダウンロードしたファイルのレコード数を計算
+                        new_file_record_count = count_csv_records(csv_path)
+                        logger.info(f"ダウンロードしたCSVファイルのレコード数: {new_file_record_count}")
+                        
+                        # 出力ディレクトリ内の最新CSVファイル（リファレンスファイル）を取得（時間制限なし）
+                        reference_file = find_latest_file_by_extension(str(full_output_dir), "csv", max_age_minutes=None)
+                        
+                        # リファレンスファイルが存在する場合、そのレコード数を計算
+                        if reference_file:
+                            reference_record_count = count_csv_records(reference_file)
+                            logger.info(f"リファレンスCSVファイルのレコード数: {reference_record_count}")
+                        
+                        # 出力ファイルのパスを構築
+                        output_file_path = os.path.join(str(full_output_dir), f"{download_filename}.csv")
+                        
+                        # 既存の出力ファイルが存在する場合はバックアップを取る
+                        if os.path.exists(output_file_path):
+                            timestamp = time.strftime("%Y%m%d_%H%M%S")
+                            backup_filename = f"{download_filename}_backup_{timestamp}.csv"
+                            backup_path = os.path.join(str(full_output_dir), backup_filename)
+                            try:
+                                shutil.copy2(output_file_path, backup_path)
+                                backup_record_count = count_csv_records(backup_path)
+                                logger.info(f"既存の出力ファイルをバックアップしました: {backup_path} (レコード数: {backup_record_count})")
+                            except Exception as e:
+                                logger.warning(f"既存ファイルのバックアップ中にエラーが発生しました: {e}")
+                        
+                        # 差分抽出処理を実行
+                        if reference_file and reference_file != csv_path:
+                            logger.info(f"リファレンスファイルとの差分を抽出します: {reference_file}")
+                            result = extract_csv_differences(
+                                new_file_path=csv_path,
+                                reference_file_path=reference_file,
+                                output_file_path=output_file_path
+                            )
+                            
+                            if result:
+                                # 差分抽出後のレコード数を計算
+                                diff_record_count = count_csv_records(output_file_path)
+                                logger.info(f"差分抽出後のCSVファイルのレコード数: {diff_record_count}")
+                                logger.info(f"差分抽出が完了し、結果を保存しました: {output_file_path}")
+                                return output_file_path
+                            else:
+                                # 差分がない場合（resultがFalse）
+                                logger.info(f"差分が検出されませんでした。ファイルを更新せずに処理を終了します。")
+                                # 既存の出力ファイルがある場合はそのまま返す、なければNoneを返す
+                                return output_file_path if os.path.exists(output_file_path) else None
+                        else:
+                            # リファレンスファイルがないか同一ファイルの場合はダウンロードしたファイルをそのまま使用
+                            logger.info(f"有効なリファレンスファイルがないため、ダウンロードしたファイルをそのまま使用します")
+                            
+                            # 出力ファイルにコピー
+                            shutil.copy2(csv_path, output_file_path)
+                            logger.info(f"ファイルを出力先にコピーしました: {output_file_path}")
+                            
+                            # 出力ファイルのレコード数を確認
+                            output_record_count = count_csv_records(output_file_path)
+                            logger.info(f"出力ファイルのレコード数: {output_record_count}")
+                            
+                            return output_file_path
+                            
                     except Exception as e:
-                        logger.error(f"CSVファイルのコピー中にエラーが発生しました: {str(e)}")
-                        # コピーに失敗した場合でも元のパスを返す
-                        logger.info(f"元のCSVファイルを使用します: {csv_path}")
+                        logger.error(f"差分抽出処理中にエラーが発生しました: {str(e)}")
+                        import traceback
+                        logger.error(traceback.format_exc())
+                        # エラーが発生した場合は元のファイルを返す
                         return csv_path
                 else:
                     logger.warning("CSVファイルのダウンロードを検出できませんでした")
@@ -1428,28 +1490,7 @@ class PortersOperations:
                         logger.info(f"{retry_interval}秒後にリトライします")
                         time.sleep(retry_interval)
                     else:
-                        # 最終試行でも失敗した場合は、最新のCSVファイルを探す
-                        latest_csv = find_latest_csv_in_downloads()
-                        if latest_csv:
-                            # タイムスタンプを付与したファイル名を生成
-                            timestamp = time.strftime("%Y%m%d_%H%M%S")
-                            new_filename = f"{download_filename}_{timestamp}.csv"
-                            destination_path = os.path.join(full_download_dir, new_filename)
-                            
-                            # 移動またはコピー
-                            try:
-                                shutil.copy2(latest_csv, destination_path)
-                                logger.info(f"最新のCSVファイルを使用し、指定した場所にコピーしました: {destination_path}")
-                                return destination_path
-                            except Exception as e:
-                                logger.error(f"CSVファイルのコピー中にエラーが発生しました: {str(e)}")
-                                # コピーに失敗した場合でも元のパスを返す
-                                logger.info(f"最新のCSVファイルを使用します: {latest_csv}")
-                                return latest_csv
-                            
-                            logger.info(f"最新のCSVファイルを使用します: {latest_csv}")
-                            return latest_csv
-                        logger.error("CSVファイルをダウンロードできませんでした")
+                        logger.error(f"リトライ回数({max_retries}回)を超えました。ダウンロードファイルを検出できませんでした。")
                         return None
             except Exception as e:
                 logger.warning(f"CSVダウンロード中にエラーが発生しました: {e}")
