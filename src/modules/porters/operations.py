@@ -1421,13 +1421,47 @@ class PortersOperations:
                         new_file_record_count = count_csv_records(csv_path)
                         logger.info(f"ダウンロードしたCSVファイルのレコード数: {new_file_record_count}")
                         
-                        # 出力ディレクトリ内の最新CSVファイル（リファレンスファイル）を取得（時間制限なし）
-                        reference_file = find_latest_file_by_extension(str(full_output_dir), "csv", max_age_minutes=None)
+                        # downloadsディレクトリからリファレンスファイルを取得
+                        backup_dir = env.get_config_value("DOWNLOAD", "BACKUP_DIRECTORY", "downloads")
+                        if isinstance(backup_dir, str):
+                            backup_dir = backup_dir.strip('"\'')
                         
-                        # リファレンスファイルが存在する場合、そのレコード数を計算
-                        if reference_file:
+                        # 相対パスを絶対パスに変換
+                        backup_path = Path(backup_dir)
+                        if not backup_path.is_absolute():
+                            backup_dir = os.path.join(env.get_project_root(), backup_dir)
+                        
+                        logger.info(f"リファレンスファイル検索ディレクトリ: {backup_dir}")
+                        
+                        # 新しくダウンロードしたファイル以外で最新のCSVファイルを取得
+                        reference_files = []
+                        if os.path.exists(backup_dir):
+                            for f in os.listdir(backup_dir):
+                                file_path = os.path.join(backup_dir, f)
+                                if (os.path.isfile(file_path) and 
+                                    file_path.lower().endswith('.csv') and 
+                                    file_path != csv_path):  # 新しいファイルは除外
+                                    reference_files.append(file_path)
+                        
+                        reference_file = None
+                        if reference_files:
+                            # 更新日時でソート
+                            reference_file = max(reference_files, key=os.path.getmtime)
+                            logger.info(f"downloadsディレクトリから最新のリファレンスファイルを発見しました: {reference_file}")
+                            
+                            # リファレンスファイルのレコード数を計算
                             reference_record_count = count_csv_records(reference_file)
                             logger.info(f"リファレンスCSVファイルのレコード数: {reference_record_count}")
+                        else:
+                            logger.info("有効なリファレンスファイルが見つかりませんでした")
+                        
+                        # 出力ディレクトリ内の最新CSVファイル（リファレンスファイル）を取得（時間制限なし）
+                        # reference_file = find_latest_file_by_extension(str(full_output_dir), "csv", max_age_minutes=None)
+                        
+                        # リファレンスファイルが存在する場合、そのレコード数を計算
+                        # if reference_file:
+                        #     reference_record_count = count_csv_records(reference_file)
+                        #     logger.info(f"リファレンスCSVファイルのレコード数: {reference_record_count}")
                         
                         # 出力ファイルのパスを構築
                         output_file_path = os.path.join(str(full_output_dir), f"{download_filename}.csv")
@@ -1457,16 +1491,24 @@ class PortersOperations:
                                 # 差分抽出後のレコード数を計算
                                 diff_record_count = count_csv_records(output_file_path)
                                 logger.info(f"差分抽出後のCSVファイルのレコード数: {diff_record_count}")
-                                logger.info(f"差分抽出が完了し、結果を保存しました: {output_file_path}")
+                                
+                                if diff_record_count > 0:
+                                    logger.info(f"差分抽出が完了し、結果を保存しました: {output_file_path}")
+                                else:
+                                    logger.info(f"差分はありませんでしたが、ヘッダー行のみの空ファイルを保存しました: {output_file_path}")
+                                
                                 return output_file_path
                             else:
-                                # 差分がない場合（resultがFalse）
-                                logger.info(f"差分が検出されませんでした。ファイルを更新せずに処理を終了します。")
+                                # エラーが発生した場合（resultがFalse）
+                                logger.error(f"差分抽出処理に失敗しました。")
                                 # 既存の出力ファイルがある場合はそのまま返す、なければNoneを返す
                                 return output_file_path if os.path.exists(output_file_path) else None
                         else:
                             # リファレンスファイルがないか同一ファイルの場合はダウンロードしたファイルをそのまま使用
-                            logger.info(f"有効なリファレンスファイルがないため、ダウンロードしたファイルをそのまま使用します")
+                            if reference_file is None:
+                                logger.info(f"リファレンスファイルが見つからないため、ダウンロードしたファイル全体を使用します")
+                            else:
+                                logger.info(f"リファレンスファイルがダウンロードファイルと同一のため、ファイル全体を使用します")
                             
                             # 出力ファイルにコピー
                             shutil.copy2(csv_path, output_file_path)

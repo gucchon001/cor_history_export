@@ -399,7 +399,7 @@ def extract_csv_differences(new_file_path: str, reference_file_path: str, output
         reference_header = []
         
         # CSVファイルのエンコーディングを推測
-        encoding = 'utf-8'  # デフォルトはUTF-8
+        encoding = 'utf-8'
         try:
             with open(reference_file_path, 'r', encoding=encoding) as f:
                 content = f.read(1024)  # 先頭の一部を読み込む
@@ -434,7 +434,7 @@ def extract_csv_differences(new_file_path: str, reference_file_path: str, output
         new_header = []
         
         # 新しいCSVファイルのエンコーディングを推測
-        encoding = 'utf-8'  # デフォルトはUTF-8
+        encoding = 'utf-8'
         try:
             with open(new_file_path, 'r', encoding=encoding) as f:
                 content = f.read(1024)
@@ -488,9 +488,21 @@ def extract_csv_differences(new_file_path: str, reference_file_path: str, output
                     logger.info(f"新しいファイルのサンプル: {sample_new}")
                     logger.info(f"リファレンスファイルのサンプル: {sample_ref}")
             
-            # 差分がない場合はファイルを作成せずにFalseを返す
-            logger.info("差分がないため、ファイルを更新せずに処理を終了します")
-            return False
+            # 差分がない場合もヘッダー行のみのファイルを作成する
+            logger.info("差分はありませんが、ヘッダー行のみの空ファイルを作成します")
+            
+            # 出力ディレクトリが存在しない場合は作成
+            output_dir = os.path.dirname(output_file_path)
+            if output_dir and not os.path.exists(output_dir):
+                os.makedirs(output_dir, exist_ok=True)
+                
+            # ヘッダー行のみのCSVファイルを保存
+            with open(output_file_path, 'w', encoding='utf-8', newline='') as csv_file:
+                writer = csv.writer(csv_file)
+                writer.writerow(new_header)  # ヘッダー行のみを書き込み
+            
+            logger.info(f"ヘッダー行のみの空ファイルを保存しました: {output_file_path}")
+            return True
         
         # 差分レコードを新しいCSVファイルに保存
         # 出力ディレクトリが存在しない場合は作成
